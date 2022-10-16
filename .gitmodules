@@ -1,0 +1,6 @@
+[submodule "GmSSL"]
+	path = GmSSL
+	url = https://github.com/guanzhi/GmSSL.git
+[submodule "src/cmdparser"]
+	path = src/cmdparser
+	url = https://github.com/XUJINKAI/cmdparser.git
