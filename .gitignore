@@ -1,6 +1,6 @@
 /.vs/
 /build/
-/build-win/
+/build-*/
 
 # Prerequisites
 *.d

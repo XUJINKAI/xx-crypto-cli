@@ -1,3 +1,4 @@
+#include "cmd/io_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/hex.h"
@@ -84,10 +85,10 @@ static cmdp_command_st main_cmdp = {
                         {'p', "phrase", "phrase to generate key and iv", CMDP_TYPE_STRING_PTR, &sm4_args.phrase},
                         {'k', "key", "key (16 bytes)", CMDP_TYPE_STRING_PTR, &sm4_args.key, "<hex>"},
                         {0, "iv", "IV (16 bytes)", CMDP_TYPE_STRING_PTR, &sm4_args.iv, "<hex>"},
-                        {'i', "in", "read format", CMDP_TYPE_STRING_PTR, &sm4_args.informat, "<FORMAT>"},
-                        {'o', "out", "write format", CMDP_TYPE_STRING_PTR, &sm4_args.outformat, "<FORMAT>"},
-                        {'r', "read", "input file", CMDP_TYPE_STRING_PTR, &sm4_args.infile, "<file>"},
-                        {'w', "write", "output file", CMDP_TYPE_STRING_PTR, &sm4_args.outfile, "<file>"},
+                        {'I', "in-fmt", "Input Format", CMDP_TYPE_STRING_PTR, &sm4_args.informat, "<FORMAT>"},
+                        {'O', "out-fmt", "Output Format", CMDP_TYPE_STRING_PTR, &sm4_args.outformat, "<FORMAT>"},
+                        {'i', "infile", "Input File", CMDP_TYPE_STRING_PTR, &sm4_args.infile, "<filepath>"},
+                        {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &sm4_args.outfile, "<filepath>"},
                         {0},
                     },
                 .fn_before  = sm4_before,
@@ -169,7 +170,7 @@ static void rand_before(cmdp_before_param_st *params)
 static cmdp_action_t rand_process(cmdp_process_param_st *params)
 {
     cmdp_action_t ret = CMDP_ACT_FAIL;
-    if (params->argc == 0)
+    if (params->argc == 0 && params->opts == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
@@ -220,7 +221,7 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
     XIO *outstream  = NULL;
     int ret         = X_FAILURE;
 
-    if (params->argc == 0)
+    if (params->argc == 0 && params->opts == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
@@ -254,49 +255,24 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
         ERROR("Can't use argument text and input file together.");
         goto end;
     }
-    if (sm4_args.infile)
-    {
-        instream = XIO_new_from_filename(sm4_args.infile, "rb");
-    }
-    else if (params->argc == 1)
-    {
-        instream = XIO_new_from_memory(params->argv[0], strlen(params->argv[0]), false);
-    }
-    else
-    {
-        instream = XIO_new_from_FILE(stdin, false);
-    }
 
-    if (sm4_args.outfile)
-    {
-        outstream = XIO_new_from_filename(sm4_args.outfile, "wb");
-    }
-    else
-    {
-        outstream = XIO_new_from_FILE(stdout, false);
-    }
+    XIO_CMD_IN_PARAM in_param = {
+        .filename     = sm4_args.infile,
+        .file_deffmt  = "bin",
+        .argument     = params->argc > 0 ? params->argv[0] : NULL,
+        .arg_deffmt   = sm4_args.decrypt ? "hex" : "bin",
+        .stdin_deffmt = sm4_args.decrypt ? "hex" : "bin",
+        .format       = sm4_args.informat,
+    };
+    instream = XIO_new_cmd_instream(&in_param);
 
-    if (sm4_args.informat != NULL)
-    {
-        if (sm4_args.informat == "hex")
-        {
-            instream = XIO_new_filter_hex(instream);
-        }
-    }
-    else if (sm4_args.infile)
-    {
-        // binary
-    }
-    else if (sm4_args.decrypt)
-    {
-        instream = XIO_new_filter_hex(instream);
-    }
-
-
-    if ((sm4_args.outformat == NULL && sm4_args.outfile == NULL || sm4_args.outformat == "hex") && !sm4_args.decrypt)
-    {
-        outstream = XIO_new_filter_hex(outstream);
-    }
+    XIO_CMD_OUT_PARAM out_param = {
+        .filename      = sm4_args.outfile,
+        .file_deffmt   = "bin",
+        .stdout_deffmt = sm4_args.decrypt ? "bin" : "hex",
+        .format        = sm4_args.outformat,
+    };
+    outstream = XIO_new_cmd_outstream(&out_param);
 
     if (sm4_args.decrypt)
     {

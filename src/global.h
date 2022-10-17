@@ -12,6 +12,13 @@
 
 #if defined(_MSC_VER)
 #include <io.h>
+//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#define strncasecmp _strnicmp
+#define strcasecmp  _stricmp
+#endif
+
+#if !defined(NDEBUG) && !defined(_DEBUG)
+#define _DEBUG
 #endif
 
 #define X_SUCCESS 1
@@ -21,8 +28,8 @@
 
 extern FILE *err_stream;
 
-#define ERROR(...) fprintf((err_stream ? err_stream : stderr), __VA_ARGS__)
-#define DEBUG(...) fprintf((err_stream ? err_stream : stderr), __VA_ARGS__)
+#define ERROR(...)   fprintf((err_stream ? err_stream : stderr), __VA_ARGS__)
+#define VERBOSE(...) fprintf((err_stream ? err_stream : stderr), __VA_ARGS__)
 #define ABORT(...)                                                                                                     \
     fprintf((err_stream ? err_stream : stderr), __VA_ARGS__);                                                          \
     abort();
