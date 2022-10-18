@@ -12,7 +12,7 @@ int x_random_bytes(XIO *out, size_t len)
         size_t n = len > sizeof(buf) ? sizeof(buf) : len;
         if (rand_bytes(buf, n) < 0)
         {
-            ERROR("rand_bytes failed");
+            LOG0("rand_bytes failed");
             return X_FAILURE;
         }
         XIO_write(out, buf, n);
@@ -48,30 +48,30 @@ int x_sm4_cbc_encrypt(const uint8_t key[16], const uint8_t iv[16], XIO *in, XIO 
 
     if (sm4_cbc_encrypt_init(&cbc_ctx, key, iv) != 1)
     {
-        ERROR("sm4_cbc_encrypt_init error");
+        LOG0("sm4_cbc_encrypt_init error");
         goto end;
     }
     while ((inlen = XIO_read(in, inbuf, sizeof(inbuf))) > 0)
     {
         if (sm4_cbc_encrypt_update(&cbc_ctx, inbuf, inlen, outbuf, &outlen) != 1)
         {
-            ERROR("sm4_cbc_encrypt_update error");
+            LOG0("sm4_cbc_encrypt_update error");
             goto end;
         }
         if (XIO_write(out, outbuf, outlen) != outlen)
         {
-            ERROR("XIO_fwrite error");
+            LOG0("XIO_fwrite error");
             goto end;
         }
     }
     if (sm4_cbc_encrypt_finish(&cbc_ctx, outbuf, &outlen) != 1)
     {
-        ERROR("sm4_cbc_encrypt_finish error");
+        LOG0("sm4_cbc_encrypt_finish error");
         goto end;
     }
     if (XIO_write(out, outbuf, outlen) != outlen)
     {
-        ERROR("XIO_fwrite error");
+        LOG0("XIO_fwrite error");
         goto end;
     }
     ret = X_SUCCESS;

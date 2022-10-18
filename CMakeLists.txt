@@ -10,10 +10,8 @@ include_directories(
     src
 )
 
-file(GLOB src
+file(GLOB_RECURSE src
     "src/*.c"
-    "src/cmd/*.c"
-    "src/xio/*.c"
     "cmdparser/cmdparser.c"
 )
 

@@ -59,7 +59,7 @@ XIO *XIO_new_from_filename(const char *filename, const char *mode)
     FILE *fp = fopen(filename, mode);
     if (fp == NULL)
     {
-        ERROR("fopen(\"%s\", \"%s\") failed", filename, mode);
+        LOG0("fopen(\"%s\", \"%s\") failed", filename, mode);
         return NULL;
     }
     return XIO_new_from_FILE(fp, true);

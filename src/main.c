@@ -1,12 +1,28 @@
 #include "cmd/io_helper.h"
 #include "cmdparser.h"
+#include "cross-platform/unistd.h"
 #include "global.h"
 #include "gmssl/hex.h"
 #include "gmssl/sm3.h"
 #include "xcrypto.h"
 
+static struct
+{
+    char *informat;
+    char *infile;
+    char *outformat;
+    char *outfile;
+} echo_args;
 
-FILE *err_stream = NULL;
+static struct
+{
+    char *fix_str;
+    bool count_line;
+    int interval_ms;
+    int total_repeat;
+    char *outformat;
+    char *outfile;
+} gen_args;
 
 static struct
 {
@@ -33,7 +49,12 @@ static struct
     char *outfile;
 } sm4_args;
 
+
 static cmdp_action_t test_process(cmdp_process_param_st *params);
+static void echo_before(cmdp_before_param_st *params);
+static cmdp_action_t echo_process(cmdp_process_param_st *params);
+static void gen_before(cmdp_before_param_st *params);
+static cmdp_action_t gen_process(cmdp_process_param_st *params);
 static void hex_before(cmdp_before_param_st *params);
 static cmdp_action_t hex_process(cmdp_process_param_st *params);
 static void rand_before(cmdp_before_param_st *params);
@@ -48,6 +69,38 @@ static cmdp_command_st main_cmdp = {
                 .name       = "test",
                 .alias_name = "t",
                 .fn_process = test_process,
+            },
+            {
+                .name = "echo",
+                .desc = "echo the input",
+                .doc  = "echo [OPTIONS] <TEXT>\n",
+                .options =
+                    (cmdp_option_st[]){
+                        {'I', "in-format", "Input Format", CMDP_TYPE_STRING_PTR, &echo_args.informat, "<FORMAT>"},
+                        {'O', "out-format", "Output Format", CMDP_TYPE_STRING_PTR, &echo_args.outformat, "<FORMAT>"},
+                        {'i', "infile", "Input File", CMDP_TYPE_STRING_PTR, &echo_args.infile, "<filepath>"},
+                        {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &echo_args.outfile, "<filepath>"},
+                        {0},
+                    },
+                .fn_before  = echo_before,
+                .fn_process = echo_process,
+            },
+            {
+                .name = "gen",
+                .desc = "Generate data",
+                .options =
+                    (cmdp_option_st[]){
+                        {'s', "string", "Fixed String", CMDP_TYPE_STRING_PTR, &gen_args.fix_str, "<STRING>"},
+                        {'l', "count-line", "Count Line", CMDP_TYPE_BOOL, &gen_args.count_line, NULL},
+                        {'S', "sleep", "Sleep interval milliseconds", CMDP_TYPE_INT4, &gen_args.interval_ms,
+                         "<MILLISECONDS>"},
+                        {'r', "repeat", "Repeat", CMDP_TYPE_INT4, &gen_args.total_repeat, "<COUNT>"},
+                        {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &gen_args.outfile, "<filepath>"},
+                        {'O', "out-format", "Output Format", CMDP_TYPE_STRING_PTR, &gen_args.outformat, "<FORMAT>"},
+                        {0},
+                    },
+                .fn_before  = gen_before,
+                .fn_process = gen_process,
             },
             {
                 .name = "hex",
@@ -115,6 +168,70 @@ static cmdp_action_t test_process(cmdp_process_param_st *params)
     XIO_close(out);
 }
 
+static void echo_before(cmdp_before_param_st *params)
+{
+    memset(&echo_args, 0, sizeof(echo_args));
+}
+static cmdp_action_t echo_process(cmdp_process_param_st *params)
+{
+    // LOG1("isatty(stdin) : %d", isatty(STDIN_FILENO));
+    // LOG1("isatty(stdout): %d", isatty(STDOUT_FILENO));
+    XIO_CMD_IN_PARAM in_param = {
+        .filename     = echo_args.infile,
+        .file_deffmt  = "bin",
+        .argument     = params->argc > 0 ? params->argv[0] : NULL,
+        .arg_deffmt   = "bin",
+        .stdin_deffmt = "bin",
+        .format       = echo_args.informat,
+    };
+    XIO *instream = XIO_new_cmd_instream(&in_param);
+
+    XIO_CMD_OUT_PARAM out_param = {
+        .filename      = echo_args.outfile,
+        .file_deffmt   = "bin",
+        .stdout_deffmt = "bin",
+        .format        = echo_args.outformat,
+    };
+    XIO *outstream = XIO_new_cmd_outstream(&out_param);
+    XIO_copy(instream, outstream);
+    XIO_close(instream);
+    XIO_close(outstream);
+}
+
+
+static void gen_before(cmdp_before_param_st *params)
+{
+    memset(&gen_args, 0, sizeof(gen_args));
+    gen_args.fix_str     = "y";
+    gen_args.interval_ms = 100;
+    gen_args.count_line  = false;
+}
+static cmdp_action_t gen_process(cmdp_process_param_st *params)
+{
+    XIO_CMD_OUT_PARAM out_param = {
+        .filename      = gen_args.outfile,
+        .file_deffmt   = "bin",
+        .stdout_deffmt = "bin",
+        .format        = gen_args.outformat,
+    };
+    XIO *outstream = XIO_new_cmd_outstream(&out_param);
+    for (int i = 0; i < gen_args.total_repeat || gen_args.total_repeat == 0; i++)
+    {
+        if (gen_args.count_line)
+        {
+            XIO_printf(outstream, "%d:%s\n", i, gen_args.fix_str);
+        }
+        else
+        {
+            XIO_printf(outstream, "%s\n", gen_args.fix_str);
+        }
+        XIO_flush(outstream);
+        sleep_ms(gen_args.interval_ms);
+    }
+    XIO_close(outstream);
+}
+
+
 static void hex_before(cmdp_before_param_st *params)
 {
     memset(&hex_args, 0, sizeof(hex_args));
@@ -127,7 +244,7 @@ static cmdp_action_t hex_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        ERROR("too many arguments");
+        LOG0("too many arguments");
         return CMDP_ACT_FAIL;
     }
     XIO *instream  = NULL;
@@ -176,14 +293,14 @@ static cmdp_action_t rand_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        ERROR("too many arguments");
+        LOG0("too many arguments");
         return CMDP_ACT_FAIL;
     }
     char *endptr = NULL;
     long len     = strtol(params->argv[0], &endptr, 10);
     if (endptr == params->argv[0] || *endptr != '\0' || len <= 0)
     {
-        ERROR("invalid length");
+        LOG0("invalid length");
         return CMDP_ACT_FAIL;
     }
     XIO *out = NULL;
@@ -227,7 +344,7 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        ERROR("too many arguments");
+        LOG0("too many arguments");
         goto end;
     }
     if (sm4_args.phrase && (sm4_args.key || sm4_args.iv))
@@ -252,7 +369,7 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
     }
     if (params->argc > 0 && sm4_args.infile)
     {
-        ERROR("Can't use argument text and input file together.");
+        LOG0("Can't use argument text and input file together.");
         goto end;
     }
 

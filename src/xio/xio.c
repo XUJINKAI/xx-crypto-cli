@@ -54,7 +54,8 @@ void XIO_copy(XIO *in, XIO *out)
 {
     uint8_t buf[1024];
     size_t len;
-    while ((len = XIO_read(in, buf, 1024)) > 0)
+    // TODO 读一个字符使下列命令生效 ./xx gen -l | ./xx echo
+    while ((len = XIO_read(in, buf, 1)) > 0)
     {
         XIO_write(out, buf, len);
     }

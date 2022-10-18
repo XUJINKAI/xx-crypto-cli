@@ -16,14 +16,14 @@ static size_t _xio_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
     if (hex_len % 2)
     {
         free(hex_buf);
-        ERROR("hex decode error");
+        LOG0("hex decode error");
         return 0;
     }
     size_t bytes_len;
     if (hex_to_bytes(hex_buf, hex_len, __ptr, &bytes_len) < 0)
     {
         free(hex_buf);
-        ERROR("hex decode error");
+        LOG0("hex decode error");
         return 0;
     }
     free(hex_buf);

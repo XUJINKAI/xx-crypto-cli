@@ -1,5 +1,5 @@
 #include "io_helper.h"
-#include <string.h>
+#include "cross-platform/string.h"
 
 static XIO *XIO_wrap_filter(XIO *xio, const char *__format, const char *def_format)
 {
@@ -18,7 +18,7 @@ static XIO *XIO_wrap_filter(XIO *xio, const char *__format, const char *def_form
     }
     else
     {
-        ERROR("unknown format: %s", fmt);
+        LOG0("unknown format: %s", fmt);
         return xio;
     }
 }
