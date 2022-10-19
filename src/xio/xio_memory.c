@@ -22,7 +22,7 @@ static size_t _xio_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 }
 static size_t _xio_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
-    LOG_ABORT("XIO_memory is read-only");
+    LOG0("XIO_memory is read-only");
     return 0;
 }
 static void _xio_flush(XIO *__io)
