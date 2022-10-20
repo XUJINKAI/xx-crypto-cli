@@ -1,7 +1,6 @@
-#include "xio.h"
+#include "xio_interface.h"
 #include <stdlib.h>
 #include <string.h>
-
 
 typedef struct XIO_memory_st
 {
@@ -32,7 +31,7 @@ static void _xio_flush(XIO *__io)
 static void _xio_close(XIO *__io)
 {
     XIO_memory *io = (XIO_memory *)__io;
-    if (io->base.release_souce)
+    if (io->base.release_resource)
     {
         free(io->buffer);
     }
@@ -45,19 +44,23 @@ static void _xio_dump(XIO *__io, XIO *out)
 }
 
 const XIO_METHOD XIO_METHOD_MEMORY = {
-    _xio_read, _xio_write, _xio_flush, _xio_close, _xio_dump,
+    .read  = _xio_read,
+    .write = _xio_write,
+    .flush = _xio_flush,
+    .close = _xio_close,
+    .dump  = _xio_dump,
 };
 
 XIO *XIO_new_from_memory(const void *data, size_t datalen, bool close_free)
 {
-    XIO_memory *io         = (XIO_memory *)malloc(sizeof(XIO_memory));
-    io->base.can_read      = true;
-    io->base.can_write     = false;
-    io->base.release_souce = close_free;
-    io->base.methods       = (XIO_METHOD *)&XIO_METHOD_MEMORY;
-    io->buffer             = (uint8_t *)data;
-    io->size               = datalen;
-    io->ptr                = io->buffer;
+    XIO_memory *io            = (XIO_memory *)malloc(sizeof(XIO_memory));
+    io->base.can_read         = true;
+    io->base.can_write        = false;
+    io->base.release_resource = close_free;
+    io->base.methods          = (XIO_METHOD *)&XIO_METHOD_MEMORY;
+    io->buffer                = (uint8_t *)data;
+    io->size                  = datalen;
+    io->ptr                   = io->buffer;
     return (XIO *)io;
 }
 XIO *XIO_new_from_string(const char *str, bool close_free)

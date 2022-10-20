@@ -1,14 +1,12 @@
-#include "xio.h"
+#include "xio_interface.h"
 #include <stdlib.h>
 #include <string.h>
-
 
 typedef struct XIO_FILE_st
 {
     XIO base;
     FILE *fp;
 } XIO_FILE;
-
 
 static size_t _xio_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
@@ -28,7 +26,7 @@ static void _xio_flush(XIO *__io)
 static void _xio_close(XIO *__io)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
-    if (io->base.release_souce)
+    if (io->base.release_resource)
     {
         fclose(io->fp);
     }
@@ -41,17 +39,21 @@ static void _xio_dump(XIO *__io, XIO *out)
 }
 
 const XIO_METHOD XIO_METHOD_FILE = {
-    _xio_read, _xio_write, _xio_flush, _xio_close, _xio_dump,
+    .read  = _xio_read,
+    .write = _xio_write,
+    .flush = _xio_flush,
+    .close = _xio_close,
+    .dump  = _xio_dump,
 };
 
 XIO *XIO_new_from_FILE(FILE *fp, bool close_free)
 {
-    XIO_FILE *io           = (XIO_FILE *)malloc(sizeof(XIO_FILE));
-    io->base.can_read      = true;
-    io->base.can_write     = true;
-    io->base.release_souce = close_free;
-    io->base.methods       = (XIO_METHOD *)&XIO_METHOD_FILE;
-    io->fp                 = fp;
+    XIO_FILE *io              = (XIO_FILE *)malloc(sizeof(XIO_FILE));
+    io->base.can_read         = true;
+    io->base.can_write        = true;
+    io->base.release_resource = close_free;
+    io->base.methods          = (XIO_METHOD *)&XIO_METHOD_FILE;
+    io->fp                    = fp;
     return (XIO *)io;
 }
 XIO *XIO_new_from_filename(const char *filename, const char *mode)

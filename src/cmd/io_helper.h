@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cmdparser.h"
+#include "global.h"
 #include "xio/xio.h"
 
 typedef struct XIO_CMD_IN_PARAM_st

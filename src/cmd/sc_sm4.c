@@ -1,9 +1,9 @@
+#include "cc/xcrypto.h"
 #include "cmd/io_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/hex.h"
 #include "gmssl/sm3.h"
-#include "xcrypto.h"
 
 static void sm4_before(cmdp_before_param_st *params);
 static cmdp_action_t sm4_process(cmdp_process_param_st *params);

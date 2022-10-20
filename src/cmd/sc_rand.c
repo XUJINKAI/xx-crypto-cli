@@ -1,7 +1,7 @@
+#include "cc/xcrypto.h"
 #include "cmd/io_helper.h"
 #include "cmdparser.h"
 #include "global.h"
-#include "xcrypto.h"
 
 static void rand_before(cmdp_before_param_st *params);
 static cmdp_action_t rand_process(cmdp_process_param_st *params);

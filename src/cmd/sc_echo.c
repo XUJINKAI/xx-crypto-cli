@@ -36,8 +36,8 @@ static void echo_before(cmdp_before_param_st *params)
 }
 static cmdp_action_t echo_process(cmdp_process_param_st *params)
 {
-    // LOG1("isatty(stdin) : %d", isatty(STDIN_FILENO));
-    // LOG1("isatty(stdout): %d", isatty(STDOUT_FILENO));
+    LOG1("isatty(stdin) : %d", isatty(0));
+    LOG1("isatty(stdout): %d", isatty(1));
     XIO_CMD_IN_PARAM in_param = {
         .filename     = echo_args.infile,
         .file_deffmt  = "bin",

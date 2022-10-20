@@ -23,8 +23,9 @@ typedef enum
 #define clear_buffer gmssl_secure_clear
 
 #include "cross-platform/string.h"
+#include "cross-platform/unistd.h"
 
-#include "log.h"
+#include "utils/log.h"
 #include "xio/xio.h"
 
 #endif /* __GLOBAL_H__ */

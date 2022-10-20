@@ -1,5 +1,5 @@
 #include "gmssl/hex.h"
-#include "xio.h"
+#include "xio_interface.h"
 
 
 typedef struct XIO_hex_st
@@ -47,7 +47,7 @@ static void _xio_close(XIO *__io)
 {
     XIO_HEX *io = (XIO_HEX *)__io;
     // XIO_printf(io->source, "\n");
-    if (io->base.release_souce)
+    if (io->base.release_resource)
     {
         XIO_close(io->source);
     }
@@ -61,16 +61,20 @@ static void _xio_dump(XIO *__io, XIO *out)
 }
 
 const XIO_METHOD __xio_methods_hex = {
-    _xio_read, _xio_write, _xio_flush, _xio_close, _xio_dump,
+    .read  = _xio_read,
+    .write = _xio_write,
+    .flush = _xio_flush,
+    .close = _xio_close,
+    .dump  = _xio_dump,
 };
 
 XIO *XIO_new_filter_hex(XIO *io)
 {
-    XIO_HEX *r            = (XIO_HEX *)malloc(sizeof(XIO_HEX));
-    r->base.methods       = (XIO_METHOD *)&__xio_methods_hex;
-    r->base.can_read      = io->can_read;
-    r->base.can_write     = io->can_write;
-    r->base.release_souce = true;
-    r->source             = io;
+    XIO_HEX *r               = (XIO_HEX *)malloc(sizeof(XIO_HEX));
+    r->base.methods          = (XIO_METHOD *)&__xio_methods_hex;
+    r->base.can_read         = io->can_read;
+    r->base.can_write        = io->can_write;
+    r->base.release_resource = true;
+    r->source                = io;
     return (XIO *)r;
 }
