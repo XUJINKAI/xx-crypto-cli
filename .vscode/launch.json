@@ -11,7 +11,10 @@
             "preLaunchTask": "build_all",
             "program": "${workspaceFolder}/build/bin/xx",
             "cwd": "${workspaceFolder}/build/bin/",
-            "args": [],
+            "args": [
+                "-h",
+                "--repl",
+            ],
             "stopAtEntry": false,
             "environment": [],
             "externalConsole": false,

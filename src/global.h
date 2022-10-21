@@ -16,6 +16,14 @@ typedef enum
     RET_ERR = 1,
 } RESULT;
 
+typedef struct
+{
+    bool repl_mode;
+    bool sigint_no_exit;
+} APP_STATE;
+
+extern APP_STATE g_state;
+
 #define X_SUCCESS 1
 #define X_FAILURE 0
 
