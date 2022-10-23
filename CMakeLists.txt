@@ -21,3 +21,12 @@ target_link_libraries(xx gmssl)
 if(UNIX)
     INSTALL(TARGETS xx RUNTIME DESTINATION bin)
 endif()
+
+execute_process(
+    COMMAND git describe --tags --long --dirty=-modified --always
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_definitions(-DGIT_TAG="${GIT_TAG}")
+message(STATUS "GIT_TAG: ${GIT_TAG}")

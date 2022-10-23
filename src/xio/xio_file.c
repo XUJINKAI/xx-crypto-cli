@@ -46,7 +46,7 @@ const XIO_METHOD XIO_METHOD_FILE = {
     .dump  = _xio_dump,
 };
 
-XIO *XIO_new_from_FILE(FILE *fp, bool close_free)
+XIO *XIO_new_fp(FILE *fp, bool close_free)
 {
     XIO_FILE *io              = (XIO_FILE *)malloc(sizeof(XIO_FILE));
     io->base.can_read         = true;
@@ -56,13 +56,13 @@ XIO *XIO_new_from_FILE(FILE *fp, bool close_free)
     io->fp                    = fp;
     return (XIO *)io;
 }
-XIO *XIO_new_from_filename(const char *filename, const char *mode)
+XIO *XIO_new_file(const char *filename, const char *mode)
 {
     FILE *fp = fopen(filename, mode);
     if (fp == NULL)
     {
-        LOG0("fopen(\"%s\", \"%s\") failed", filename, mode);
+        LOG_C(0, "fopen(\"%s\", \"%s\") failed", filename, mode);
         return NULL;
     }
-    return XIO_new_from_FILE(fp, true);
+    return XIO_new_fp(fp, true);
 }

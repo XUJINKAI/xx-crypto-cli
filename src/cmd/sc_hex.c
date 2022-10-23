@@ -41,14 +41,14 @@ static cmdp_action_t hex_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        LOG0("too many arguments");
+        LOG_C(0, "too many arguments");
         return CMDP_ACT_FAIL;
     }
     XIO *instream  = NULL;
     XIO *outstream = NULL;
     if (hex_args.infile)
     {
-        instream = XIO_new_from_filename(hex_args.infile, "rb");
+        instream = XIO_new_file(hex_args.infile, "rb");
     }
     else
     {
@@ -56,11 +56,11 @@ static cmdp_action_t hex_process(cmdp_process_param_st *params)
     }
     if (hex_args.outfile)
     {
-        outstream = XIO_new_from_filename(hex_args.outfile, "wb");
+        outstream = XIO_new_file(hex_args.outfile, "wb");
     }
     else
     {
-        outstream = XIO_new_from_FILE(stdout, false);
+        outstream = XIO_new_fp(stdout, false);
     }
     if (hex_args.decode)
     {

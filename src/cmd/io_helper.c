@@ -18,7 +18,7 @@ static XIO *XIO_wrap_filter(XIO *xio, const char *__format, const char *def_form
     }
     else
     {
-        LOG0("unknown format: %s", fmt);
+        LOG_C(0, "unknown format: %s", fmt);
         return xio;
     }
 }
@@ -28,17 +28,17 @@ XIO *XIO_new_cmd_instream(struct XIO_CMD_IN_PARAM_st *param)
     XIO *r = NULL;
     if (param->filename)
     {
-        r = XIO_new_from_filename(param->filename, "rb");
+        r = XIO_new_file(param->filename, "rb");
         return XIO_wrap_filter(r, param->format, param->file_deffmt);
     }
     else if (param->argument)
     {
-        r = XIO_new_from_memory(param->argument, strlen(param->argument), false);
+        r = XIO_new_r_mem(param->argument, strlen(param->argument), false);
         return XIO_wrap_filter(r, param->format, param->arg_deffmt);
     }
     else
     {
-        r = XIO_new_from_FILE(stdin, false);
+        r = XIO_new_fp(stdin, false);
         return XIO_wrap_filter(r, param->format, param->stdin_deffmt);
     }
     return r;
@@ -48,12 +48,12 @@ XIO *XIO_new_cmd_outstream(struct XIO_CMD_OUT_PARAM_st *param)
     XIO *r = NULL;
     if (param->filename)
     {
-        r = XIO_new_from_filename(param->filename, "wb");
+        r = XIO_new_file(param->filename, "wb");
         return XIO_wrap_filter(r, param->format, param->file_deffmt);
     }
     else
     {
-        r = XIO_new_from_FILE(stdout, false);
+        r = XIO_new_fp(stdout, false);
         return XIO_wrap_filter(r, param->format, param->stdout_deffmt);
     }
     return r;

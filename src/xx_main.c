@@ -1,4 +1,5 @@
 #include "cmdparser.h"
+#include "cross-platform/unistd.h"
 #include "global.h"
 #include "utils/console.h"
 #include <signal.h>
@@ -7,26 +8,22 @@ APP_STATE g_state = {
     .repl_mode      = false,
     .sigint_no_exit = false,
 };
-
-static cmdp_flag_t opt_repl_disable()
-{
-    return g_state.repl_mode ? CMDP_FLAG_DISABLE : CMDP_FLAG_NONE;
-}
-
 struct
 {
     bool help;
     bool version;
-    bool verbose;
+    bool log_verbose;
+    bool log_debug;
 } arg_main = {0};
 
 static void main_before(cmdp_before_param_st *params);
 static cmdp_action_t main_process(cmdp_process_param_st *params);
 
-extern cmdp_command_st sc_echo;
+extern cmdp_command_st sc_print;
 extern cmdp_command_st sc_gen;
 extern cmdp_command_st sc_hex;
 extern cmdp_command_st sc_rand;
+extern cmdp_command_st sc_ecdhe;
 extern cmdp_command_st sc_sm4;
 extern cmdp_command_st sc_chat;
 static cmdp_command_st main_cmdp = {
@@ -35,12 +32,13 @@ static cmdp_command_st main_cmdp = {
     .sub_commands =
         (cmdp_command_st *[]){
             CMDP_DOC("\nData gen/process:\n"),
-            &sc_echo,
+            &sc_print,
             &sc_gen,
             &sc_hex,
             CMDP_DOC("\nCommon crypto:\n"),
             &sc_rand,
             &sc_sm4,
+            &sc_ecdhe,
             CMDP_DOC("\nHandy tool:\n"),
             &sc_chat,
             CMDP_DOC("\n"
@@ -49,15 +47,18 @@ static cmdp_command_st main_cmdp = {
         },
     .options =
         (cmdp_option_st[]){
-            {0, "repl", "Into interactive mode", CMDP_TYPE_BOOL, &g_state.repl_mode, .fn_flag = opt_repl_disable},
-            {0, "verbose", "Verbose log", CMDP_TYPE_BOOL, &arg_main.verbose},
+            {0, "repl", "Into interactive mode", CMDP_TYPE_BOOL, &g_state.repl_mode},
+            {0, "verbose", "Verbose log", CMDP_TYPE_BOOL, &arg_main.log_verbose},
+#ifdef _DEBUG
+            {0, "debug", "Debug log", CMDP_TYPE_BOOL, &arg_main.log_debug},
+#endif
             {0, "version", "Show version", CMDP_TYPE_BOOL, &arg_main.version, CMDP_HIDE},
             {'h', "help", "Show this help", CMDP_TYPE_BOOL, &arg_main.help, CMDP_HIDE},
             {0},
         },
     .doc_tail = "\n"
                 "Use -h/--help to show this help, --version to show version.\n"
-                "GitHub: https://github.com/XUJINKAI/crypto-tool\n",
+                "Homepage: https://github.com/XUJINKAI/crypto-tool\n",
     .fn_before  = main_before,
     .fn_process = main_process,
 };
@@ -69,7 +70,7 @@ static void repl()
     printf("\n"); // after main's
     while (1)
     {
-        u_char *line = console_readline("XX> ");
+        u_char *line = console_readline(TC_GREEN, "XX> ");
         if (line == NULL || strlen(line) == 0)
         {
             free(line);
@@ -95,20 +96,10 @@ static void signal_handler(int signum)
 
 int xx_main(int argc, char *argv[])
 {
-#ifdef _DEBUG
-    tty_puts(stdout, TC_GREEN);
-    printf("DEBUG MODE. PID: %d\n"
-           "CMD:",
-           getpid());
-    for (size_t i = 0; i < argc; i++)
-    {
-        printf(" %s", argv[i]);
-    }
-    tty_puts(stdout, TC_RESET);
-    printf("\n");
-#endif
-
+    log_set_stream(stderr);
     signal(SIGINT, signal_handler);
+
+    LOG_WARN("WIP: ONLY a few commands are implemented!");
 
     // cmdp's help is short-circuit parse, but all options are needed.
     cmdp_global_config_st *cmdp_cfg = cmdp_get_global_config();
@@ -130,18 +121,34 @@ static void main_before(cmdp_before_param_st *params)
 
 static cmdp_action_t main_process(cmdp_process_param_st *params)
 {
+    if (arg_main.log_debug)
+    {
+        log_enable_type(LOGT_DEBUG, true);
+        LOG_DBG("Debug log enabled");
+    }
+    if (arg_main.log_verbose)
+    {
+        log_enable_type(LOGT_VERBOSE, true);
+        LOG_VERBOSE("Verbose log enabled");
+        LOG_VERBOSE("PID: %d", getpid());
+    }
+
     if (params->argc == 0 && params->opts == 0 || arg_main.help)
     {
         return CMDP_ACT_OVER | CMDP_ACT_SHOW_HELP;
     }
+
     if (arg_main.version)
     {
-        printf("Version: %s\n", "0.0.1");
+        char *build_type =
+#ifdef _DEBUG
+            "Debug";
+#else
+            "Release";
+#endif
+        fprintf(stdout, "xx version %s %s %s %s build\n", GIT_TAG, __DATE__, __TIME__, build_type);
         return CMDP_ACT_OVER;
     }
-    if (arg_main.verbose)
-    {
-        log_level = 1;
-    }
+
     return CMDP_ACT_CONTINUE;
 }

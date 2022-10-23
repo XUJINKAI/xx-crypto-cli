@@ -5,7 +5,9 @@
 #include "global.h"
 #include "gmssl/hex.h"
 #include "gmssl/pbkdf2.h"
+#include "gmssl/sm2.h"
 #include "gmssl/sm4.h"
+#include "utils/console.h"
 #include <ctype.h> // isxdigit
 
 static void chat_before(cmdp_before_param_st *params);
@@ -67,29 +69,25 @@ static bool is_cipher_string(const char *str)
     return true;
 }
 
-static void chat_start_session(struct chat_session_st *session)
+static void chat_session_start(struct chat_session_st *session)
 {
     char *key_hex = bytes_to_hex(session->key, 16);
     char *iv_hex  = bytes_to_hex(session->iv, 16);
     XIO_printf(session->out_stream,
+               "\n"
                "Chat session started.\n"
                "Use following command to restore session:\n"
-               "> chat --restore --sm4-cbc %s%s\n",
+               "chat --restore --sm4-cbc %s%s\n"
+               "\n"
+               "Input plain text or cipher:",
                key_hex, iv_hex);
     free(key_hex);
     free(iv_hex);
 
     while (1)
     {
-        printf("> ");
-        char line[10240] = {0};
-        fgets(line, 10240, stdin);
+        char *line      = console_readline(TC_GREEN, "\n> ");
         size_t lineSize = strlen(line);
-        if (line[lineSize - 1] == '\n')
-        {
-            line[lineSize - 1] = '\0';
-            lineSize--;
-        }
         if (is_cipher_string(line))
         {
             uint8_t *cipher_bytes   = calloc(1, lineSize / 2);
@@ -127,9 +125,49 @@ static void chat_start_session(struct chat_session_st *session)
             XIO_printf(session->out_stream, "%s\n", final_hex);
             free(final_hex);
         }
+        free(line);
     }
 }
 
+
+static void SM2_point_mul_bytes(SM2_POINT Point, uint8_t private_key_bytes[32], uint8_t result_bytes[64])
+{
+    LOG_DBG_HEX("x: ", Point.x, 32);
+    LOG_DBG_HEX("y: ", Point.y, 32);
+    LOG_DBG_HEX("k: ", private_key_bytes, 32);
+    SM2_BN sk, pt_x, pt_y;
+    sm2_bn_from_bytes(sk, private_key_bytes);
+    sm2_bn_from_bytes(pt_x, Point.x);
+    sm2_bn_from_bytes(pt_y, Point.y);
+
+    SM2_JACOBIAN_POINT _P, *P = &_P;
+    SM2_JACOBIAN_POINT _R, *R = &_R;
+    sm2_jacobian_point_set_xy(P, pt_x, pt_y);
+    sm2_jacobian_point_mul(R, sk, P);
+
+    SM2_BN result_x, result_y;
+    sm2_jacobian_point_get_xy(R, result_x, result_y);
+
+    sm2_bn_to_bytes(result_x, result_bytes);
+    sm2_bn_to_bytes(result_y, result_bytes + 32);
+    LOG_DBG_HEX("R: ", result_bytes, 64);
+}
+
+static void chat_kdf(void *pass, size_t pass_len, uint8_t result_key[32], uint8_t result_iv[32])
+{
+    uint8_t secret[32] = {0};
+    pbkdf2_hmac_sm3_genkey(pass, pass_len, NULL, 0, 10001, 32, secret);
+    memcpy(result_key, secret, 16);
+    memcpy(result_iv, secret + 16, 16);
+}
+
+static RESULT sm2_point_from_string(SM2_POINT *P, const char *str)
+{
+    XX_MEM *mem = hex_to_mem(str, strlen(str));
+    int r       = sm2_point_from_octets(P, mem->ptr, mem->len);
+    XX_MEM_free(mem);
+    return r == 1 ? RET_OK : RET_ERR;
+}
 
 static void chat_before(cmdp_before_param_st *params)
 {
@@ -143,23 +181,70 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     }
     if (arg_chat.init + arg_chat.join + arg_chat.restore + arg_chat.psk != 1)
     {
-        LOG0("Only one of --init, --join, --restore, --psk can be specified");
+        LOG_ERR("Only one of --init, --join, --restore, --psk should be specified");
         return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
     }
 
     struct chat_session_st session = {
-        .in_stream  = XIO_new_from_FILE(stdin, false),
-        .out_stream = XIO_new_from_FILE(stdout, false),
+        .in_stream  = XIO_new_fp(stdin, false),
+        .out_stream = XIO_new_fp(stdout, false),
     };
+
     if (arg_chat.init)
     {
-        LOG0("not implemented");
-        return CMDP_ACT_OVER;
+        SM2_KEY key;
+        sm2_key_generate(&key);
+        uint8_t compress_pk[33];
+        sm2_point_to_compressed_octets(&key.public_key, compress_pk);
+
+        LOG_DBG_HEX("sk: ", key.private_key, 32);
+        LOG_DBG_HEX("pk: ", &key.public_key, 64);
+        LOG_C(TC_YELLOW, "Send following command to other side:");
+        LOG_C_HEX(TC_CYAN, "xx chat --join ", compress_pk, 33);
+        RESULT other_ret = RET_ERR;
+        SM2_POINT other_pk;
+        do
+        {
+            char *resp_hex = console_readline(0, "Input other side's response: ");
+            other_ret      = sm2_point_from_string(&other_pk, resp_hex);
+            free(resp_hex);
+            if (other_ret != RET_OK)
+            {
+                LOG_C(0, "Invalid response");
+            }
+        } while (other_ret != RET_OK);
+        uint8_t result_point[64];
+        SM2_point_mul_bytes(other_pk, key.private_key, result_point);
+        chat_kdf(result_point, 64, session.key, session.iv);
     }
     else if (arg_chat.join)
     {
-        LOG0("not implemented");
-        return CMDP_ACT_OVER;
+        if (params->argc != 1)
+        {
+            LOG_C(0, "Invalid argument.");
+            return CMDP_ACT_FAIL;
+        }
+        SM2_POINT other_pk;
+        if (sm2_point_from_string(&other_pk, params->argv[0]) != RET_OK)
+        {
+            LOG_C(0, "Invalid argument.");
+            return CMDP_ACT_FAIL;
+        }
+
+        SM2_KEY key;
+        sm2_key_generate(&key);
+        LOG_DBG_HEX("sk: ", key.private_key, 32);
+        LOG_DBG_HEX("pk: ", &key.public_key, 64);
+
+        uint8_t result_point[64];
+        SM2_point_mul_bytes(other_pk, key.private_key, result_point);
+
+        chat_kdf(result_point, 64, session.key, session.iv);
+
+        uint8_t compress_pk[33];
+        sm2_point_to_compressed_octets(&key.public_key, compress_pk);
+        LOG_C(TC_YELLOW, "Send following text to other side:");
+        LOG_C_HEX(TC_CYAN, "", compress_pk, 33);
     }
     else if (arg_chat.restore)
     {
@@ -170,7 +255,7 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
 
         if (strlen(params->argv[0]) != 64)
         {
-            LOG0("Invalid KEY length");
+            LOG_C(0, "Invalid KEY length");
             return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
         }
         size_t outlen;
@@ -181,21 +266,18 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            LOG0("--psk requires an argument");
+            LOG_C(0, "--psk requires an argument");
             return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
         }
-        uint8_t secret[32];
-        pbkdf2_hmac_sm3_genkey(params->argv[0], strlen(params->argv[0]), NULL, 0, 10001, 32, secret);
-        memcpy(session.key, secret, 16);
-        memcpy(session.iv, secret + 16, 16);
+        chat_kdf(params->argv[0], strlen(params->argv[0]), session.key, session.iv);
     }
     else
     {
-        LOG0("not implemented");
+        LOG_C(0, "not implemented");
         return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
     }
 
-    chat_start_session(&session);
+    chat_session_start(&session);
     XIO_close(session.in_stream);
     XIO_close(session.out_stream);
 

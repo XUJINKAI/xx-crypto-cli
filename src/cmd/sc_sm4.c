@@ -60,7 +60,7 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        LOG0("too many arguments");
+        LOG_C(0, "too many arguments");
         goto end;
     }
     if (sm4_args.phrase && (sm4_args.key || sm4_args.iv))
@@ -85,7 +85,7 @@ static cmdp_action_t sm4_process(cmdp_process_param_st *params)
     }
     if (params->argc > 0 && sm4_args.infile)
     {
-        LOG0("Can't use argument text and input file together.");
+        LOG_C(0, "Can't use argument text and input file together.");
         goto end;
     }
 

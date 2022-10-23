@@ -1,6 +1,7 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -32,6 +33,9 @@ extern APP_STATE g_state;
 
 #include "cross-platform/string.h"
 #include "cross-platform/unistd.h"
+
+#include "types/xx_mem.h"
+#include "types/xx_str.h"
 
 #include "utils/log.h"
 #include "xio/xio.h"

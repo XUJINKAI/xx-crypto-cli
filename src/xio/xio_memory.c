@@ -21,7 +21,7 @@ static size_t _xio_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 }
 static size_t _xio_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
-    LOG0("XIO_memory is read-only");
+    LOG_C(0, "XIO_memory is read-only");
     return 0;
 }
 static void _xio_flush(XIO *__io)
@@ -51,7 +51,7 @@ const XIO_METHOD XIO_METHOD_MEMORY = {
     .dump  = _xio_dump,
 };
 
-XIO *XIO_new_from_memory(const void *data, size_t datalen, bool close_free)
+XIO *XIO_new_r_mem(const void *data, size_t datalen, bool close_free)
 {
     XIO_memory *io            = (XIO_memory *)malloc(sizeof(XIO_memory));
     io->base.can_read         = true;
@@ -65,5 +65,5 @@ XIO *XIO_new_from_memory(const void *data, size_t datalen, bool close_free)
 }
 XIO *XIO_new_from_string(const char *str, bool close_free)
 {
-    return XIO_new_from_memory(str, strlen(str), close_free);
+    return XIO_new_r_mem(str, strlen(str), close_free);
 }

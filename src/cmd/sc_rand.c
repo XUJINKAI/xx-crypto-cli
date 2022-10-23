@@ -40,24 +40,24 @@ static cmdp_action_t rand_process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        LOG0("too many arguments");
+        LOG_C(0, "too many arguments");
         return CMDP_ACT_FAIL;
     }
     char *endptr = NULL;
     long len     = strtol(params->argv[0], &endptr, 10);
     if (endptr == params->argv[0] || *endptr != '\0' || len <= 0)
     {
-        LOG0("invalid length");
+        LOG_C(0, "invalid length");
         return CMDP_ACT_FAIL;
     }
     XIO *out = NULL;
     if (rand_args.outfile != NULL)
     {
-        out = XIO_new_from_filename(rand_args.outfile, "wb");
+        out = XIO_new_file(rand_args.outfile, "wb");
     }
     else
     {
-        out = XIO_new_from_FILE(stdout, false);
+        out = XIO_new_fp(stdout, false);
     }
     if (rand_args.outformat == NULL && rand_args.outfile == NULL || rand_args.outformat == "hex")
     {

@@ -12,6 +12,8 @@
             "program": "${workspaceFolder}/build/bin/xx",
             "cwd": "${workspaceFolder}/build/bin/",
             "args": [
+                "--verbose",
+                "--debug",
                 "-h",
                 "--repl",
             ],

@@ -77,15 +77,16 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream)
 #endif
 
 
-char *console_readline(const char *prompt)
+char *console_readline(const char *color, const char *prompt)
 {
-    if (isatty(fileno(stdout)))
+    if (color != NULL && isatty(fileno(stdout)))
     {
-        fprintf(stdout, "%s%s%s", TC_GREEN, prompt, TC_RESET);
+        fputs(color, stdout);
     }
-    else
+    fprintf(stdout, "%s", prompt);
+    if (color != NULL && isatty(fileno(stdout)))
     {
-        fprintf(stdout, "%s", prompt);
+        fputs(TC_RESET, stdout);
     }
     char *line       = NULL;
     size_t __mem_len = 0;
@@ -148,7 +149,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
         if (newStrings == NULL)
         {
-            LOG0("Cannot allocate string.");
+            LOG_C(0, "Cannot allocate string.");
             return FALSE;
         }
 
@@ -211,7 +212,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
                  */
                 if (ch == '\0')
                 {
-                    LOG0("Bad quoted character.");
+                    LOG_C(0, "Bad quoted character.");
                     return FALSE;
                 }
 
@@ -254,7 +255,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
          */
         if (quote)
         {
-            LOG0("Unmatched quote character.");
+            LOG_C(0, "Unmatched quote character.");
             return FALSE;
         }
 
@@ -280,7 +281,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
             if (newArgTable == NULL)
             {
-                LOG0("No memory for arg list.");
+                LOG_C(0, "No memory for arg list.");
                 return FALSE;
             }
 
