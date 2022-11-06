@@ -1,8 +1,8 @@
-# crypto-tool (xx)
+# xx-crypto-cli
 
-WIP: 开发中!
+Windows/Linux Crypto CLI Toolbox. 跨平台密码工具箱。
 
-Windows/Linux 密码工具，包装openssl/gmssl常用命令。
+:warning: WIP: ONLY a few commands work. 开发中！仅部分功能可用。
 
 ## Build
 

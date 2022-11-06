@@ -1,6 +1,5 @@
 #include "cc/hex.h"
-#include "cmd/io_helper.h"
-#include "cmd/opt_helper.h"
+#include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/hex.h"
@@ -10,8 +9,8 @@
 #include "utils/console.h"
 #include <ctype.h> // isxdigit
 
-static void chat_before(cmdp_before_param_st *params);
-static cmdp_action_t chat_process(cmdp_process_param_st *params);
+
+static cmdp_action_t __process(cmdp_process_param_st *params);
 
 struct chat_session_st
 {
@@ -27,7 +26,6 @@ static struct
     bool join;
     bool restore;
     bool psk;
-    bool sm4_cbc;
 } arg_chat;
 
 cmdp_command_st sc_chat = {
@@ -35,8 +33,8 @@ cmdp_command_st sc_chat = {
     .desc = "Interactive encryption chat helper",
     .doc  = "Usage: chat [OPTIONS]\n"
            "Initiate: chat --init\n"
-           "Join:     chat --join <TEXT>\n"
-           "Restore:  chat --restore [--sm4-cbc] <KEY>\n"
+           "Join:     chat --join <KEY>\n"
+           "Restore:  chat --restore <KEY>\n"
            "PSK:      chat --psk <PSK>\n"
            "Attention! Cipher text will permanently lost if KEY lost.\n"
            "\n",
@@ -46,11 +44,9 @@ cmdp_command_st sc_chat = {
             {0, "join", "Join a chat", CMDP_TYPE_BOOL, &arg_chat.join},
             {0, "restore", "Restore a chat", CMDP_TYPE_BOOL, &arg_chat.restore},
             {0, "psk", "Use a Pre-Shared Key to start chat", CMDP_TYPE_BOOL, &arg_chat.psk},
-            {0, "sm4-cbc", "Use SM4-CBC mode", CMDP_TYPE_BOOL, &arg_chat.sm4_cbc},
             {0},
         },
-    .fn_before  = chat_before,
-    .fn_process = chat_process,
+    .fn_process = __process,
 };
 
 static bool is_cipher_string(const char *str)
@@ -71,22 +67,20 @@ static bool is_cipher_string(const char *str)
 
 static void chat_session_start(struct chat_session_st *session)
 {
+    XIO_printf(session->out_stream, "\n"
+                                    "Chat session started.\n");
+
     char *key_hex = bytes_to_hex(session->key, 16);
     char *iv_hex  = bytes_to_hex(session->iv, 16);
-    XIO_printf(session->out_stream,
-               "\n"
-               "Chat session started.\n"
-               "Use following command to restore session:\n"
-               "chat --restore --sm4-cbc %s%s\n"
-               "\n"
-               "Input plain text or cipher:",
+    LOG_SECRET("Use following command to restore session:\n"
+               "chat --restore %s%s\n",
                key_hex, iv_hex);
     free(key_hex);
     free(iv_hex);
 
     while (1)
     {
-        char *line      = console_readline(TC_GREEN, "\n> ");
+        char *line      = console_readline(TC_GREEN, "\nCHAT> ");
         size_t lineSize = strlen(line);
         if (is_cipher_string(line))
         {
@@ -164,16 +158,16 @@ static void chat_kdf(void *pass, size_t pass_len, uint8_t result_key[32], uint8_
 static RESULT sm2_point_from_string(SM2_POINT *P, const char *str)
 {
     XX_MEM *mem = hex_to_mem(str, strlen(str));
-    int r       = sm2_point_from_octets(P, mem->ptr, mem->len);
+    if (mem == NULL)
+    {
+        return RET_FAIL;
+    }
+    int r = sm2_point_from_octets(P, mem->ptr, mem->len);
     XX_MEM_free(mem);
-    return r == 1 ? RET_OK : RET_ERR;
+    return r == 1 ? RET_OK : RET_FAIL;
 }
 
-static void chat_before(cmdp_before_param_st *params)
-{
-    memset(&arg_chat, 0, sizeof(arg_chat));
-}
-static cmdp_action_t chat_process(cmdp_process_param_st *params)
+static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     if (params->argc == 0 && params->opts == 0)
     {
@@ -182,7 +176,7 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     if (arg_chat.init + arg_chat.join + arg_chat.restore + arg_chat.psk != 1)
     {
         LOG_ERR("Only one of --init, --join, --restore, --psk should be specified");
-        return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+        return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 
     struct chat_session_st session = {
@@ -201,7 +195,7 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
         LOG_DBG_HEX("pk: ", &key.public_key, 64);
         LOG_C(TC_YELLOW, "Send following command to other side:");
         LOG_C_HEX(TC_CYAN, "xx chat --join ", compress_pk, 33);
-        RESULT other_ret = RET_ERR;
+        RESULT other_ret = RET_FAIL;
         SM2_POINT other_pk;
         do
         {
@@ -210,7 +204,7 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
             free(resp_hex);
             if (other_ret != RET_OK)
             {
-                LOG_C(0, "Invalid response");
+                LOG_ERR("Invalid response");
             }
         } while (other_ret != RET_OK);
         uint8_t result_point[64];
@@ -221,14 +215,14 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            LOG_C(0, "Invalid argument.");
-            return CMDP_ACT_FAIL;
+            LOG_ERR("Invalid argument.");
+            return CMDP_ACT_ERROR;
         }
         SM2_POINT other_pk;
         if (sm2_point_from_string(&other_pk, params->argv[0]) != RET_OK)
         {
-            LOG_C(0, "Invalid argument.");
-            return CMDP_ACT_FAIL;
+            LOG_ERR("Invalid argument.");
+            return CMDP_ACT_ERROR;
         }
 
         SM2_KEY key;
@@ -250,13 +244,13 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+            return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
         }
 
         if (strlen(params->argv[0]) != 64)
         {
-            LOG_C(0, "Invalid KEY length");
-            return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+            LOG_ERR("Invalid KEY length");
+            return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
         }
         size_t outlen;
         hex_to_bytes(params->argv[0], 32, session.key, &outlen);
@@ -266,20 +260,20 @@ static cmdp_action_t chat_process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            LOG_C(0, "--psk requires an argument");
-            return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+            LOG_ERR("--psk requires an argument");
+            return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
         }
         chat_kdf(params->argv[0], strlen(params->argv[0]), session.key, session.iv);
     }
     else
     {
-        LOG_C(0, "not implemented");
-        return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+        LOG_ERR("not implemented");
+        return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 
     chat_session_start(&session);
     XIO_close(session.in_stream);
     XIO_close(session.out_stream);
 
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }

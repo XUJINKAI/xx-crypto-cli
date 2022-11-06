@@ -1,15 +1,92 @@
 #include "cipher.h"
+#include "gmssl/sm4.h"
 
-struct CC_CIPHER_CTX_st
+RESULT cc_sm4_cbc_encrypt(CC_SM4_PARAM *param, XIO *in, XIO *out)
 {
-    uint32_t algr;
-    uint32_t direction;
-    void *ctx;
-};
+    SM4_CBC_CTX cbc_ctx;
+    uint8_t inbuf[1024];
+    size_t inlen;
+    uint8_t outbuf[1024];
+    size_t outlen;
+    int ret = RET_FAIL;
 
-CC_CIPHER_CTX *CIPHER_new(uint32_t algr, uint32_t direction);
-bool CIPHER_set_key(const uint8_t *key, size_t key_len);
-bool CIPHER_set_iv(const uint8_t *iv, size_t iv_len);
-bool CIPHER_update(const uint8_t *in, size_t in_len, uint8_t *out, size_t *out_len);
-bool CIPHER_finish(uint8_t *out, size_t *out_len);
-void CIPHER_free(CC_CIPHER_CTX *ctx);
+    if (sm4_cbc_encrypt_init(&cbc_ctx, param->key, param->iv) != 1)
+    {
+        LOG_ERR("sm4_cbc_encrypt_init error");
+        goto end;
+    }
+    while ((inlen = XIO_read(in, inbuf, sizeof(inbuf))) > 0)
+    {
+        if (sm4_cbc_encrypt_update(&cbc_ctx, inbuf, inlen, outbuf, &outlen) != 1)
+        {
+            LOG_ERR("sm4_cbc_encrypt_update error");
+            goto end;
+        }
+        if (XIO_write(out, outbuf, outlen) != outlen)
+        {
+            LOG_ERR("XIO_fwrite error");
+            goto end;
+        }
+    }
+    if (sm4_cbc_encrypt_finish(&cbc_ctx, outbuf, &outlen) != 1)
+    {
+        LOG_ERR("sm4_cbc_encrypt_finish error");
+        goto end;
+    }
+    if (XIO_write(out, outbuf, outlen) != outlen)
+    {
+        LOG_ERR("XIO_fwrite error");
+        goto end;
+    }
+    ret = RET_OK;
+
+end:
+    clear_buffer(inbuf, sizeof(inbuf));
+    clear_buffer(outbuf, sizeof(outbuf));
+    return ret;
+}
+
+RESULT cc_sm4_cbc_decrypt(CC_SM4_PARAM *param, XIO *in, XIO *out)
+{
+    SM4_CBC_CTX cbc_ctx;
+    uint8_t inbuf[1024];
+    size_t inlen;
+    uint8_t outbuf[1024];
+    size_t outlen;
+    int ret = RET_FAIL;
+
+    if (sm4_cbc_decrypt_init(&cbc_ctx, param->key, param->iv) != 1)
+    {
+        LOG_ERR("sm4_cbc_decrypt_init error");
+        goto end;
+    }
+    while ((inlen = XIO_read(in, inbuf, sizeof(inbuf))) > 0)
+    {
+        if (sm4_cbc_decrypt_update(&cbc_ctx, inbuf, inlen, outbuf, &outlen) != 1)
+        {
+            LOG_ERR("sm4_cbc_decrypt_update error");
+            goto end;
+        }
+        if (XIO_write(out, outbuf, outlen) != outlen)
+        {
+            LOG_ERR("XIO_fwrite error");
+            goto end;
+        }
+    }
+    if (sm4_cbc_decrypt_finish(&cbc_ctx, outbuf, &outlen) != 1)
+    {
+        LOG_ERR("sm4_cbc_decrypt_finish error");
+        goto end;
+    }
+    if (XIO_write(out, outbuf, outlen) != outlen)
+    {
+        LOG_ERR("XIO_fwrite error");
+        goto end;
+    }
+    ret = RET_OK;
+
+end:
+    clear_buffer(inbuf, sizeof(inbuf));
+    clear_buffer(outbuf, sizeof(outbuf));
+    return RET_OK;
+}

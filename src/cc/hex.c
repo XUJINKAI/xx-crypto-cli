@@ -2,6 +2,15 @@
 #include "gmssl/hex.h"
 #include <stdlib.h>
 
+void XIO_HEX_write(XIO *io, const void *__ptr, size_t __len)
+{
+    uint8_t *p = (uint8_t *)__ptr;
+    for (size_t i = 0; i < __len; i++)
+    {
+        XIO_printf(io, "%02X", p[i]);
+    }
+}
+
 char *bytes_to_hex(const uint8_t *bytes, size_t len)
 {
     char *hex = malloc(len * 2 + 1);

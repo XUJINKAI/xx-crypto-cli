@@ -149,7 +149,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
         if (newStrings == NULL)
         {
-            LOG_C(0, "Cannot allocate string.");
+            LOG_ERR("Cannot allocate string.");
             return FALSE;
         }
 
@@ -212,7 +212,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
                  */
                 if (ch == '\0')
                 {
-                    LOG_C(0, "Bad quoted character.");
+                    LOG_ERR("Bad quoted character.");
                     return FALSE;
                 }
 
@@ -255,7 +255,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
          */
         if (quote)
         {
-            LOG_C(0, "Unmatched quote character.");
+            LOG_ERR("Unmatched quote character.");
             return FALSE;
         }
 
@@ -281,7 +281,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
             if (newArgTable == NULL)
             {
-                LOG_C(0, "No memory for arg list.");
+                LOG_ERR("No memory for arg list.");
                 return FALSE;
             }
 

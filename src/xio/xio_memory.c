@@ -1,4 +1,4 @@
-#include "xio_interface.h"
+#include "xio_internal.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,60 +10,62 @@ typedef struct XIO_memory_st
     uint8_t *ptr;
 } XIO_memory;
 
-static size_t _xio_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
+static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
     XIO_memory *io    = (XIO_memory *)__io;
     size_t remain_len = io->size - (io->ptr - io->buffer);
     size_t len        = __maxlen < remain_len ? __maxlen : remain_len;
     memcpy(__ptr, io->ptr, len);
     io->ptr += len;
+    io->base.num_read += len;
     return len;
 }
-static size_t _xio_write(XIO *__io, const uint8_t *__ptr, size_t __len)
+static size_t _write_(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
-    LOG_C(0, "XIO_memory is read-only");
+    LOG_ERR("XIO_memory is read-only");
     return 0;
 }
-static void _xio_flush(XIO *__io)
+static void _flush_(XIO *__io)
 {
     (void)__io;
 }
-static void _xio_close(XIO *__io)
+static void _close_(XIO *__io)
 {
     XIO_memory *io = (XIO_memory *)__io;
-    if (io->base.release_resource)
+    if (HAS_FLAG(io->base.flags, XIO_FLAG_CLOSE))
     {
         free(io->buffer);
     }
     free(io);
 }
-static void _xio_dump(XIO *__io, XIO *out)
+static void _dump(XIO *__io, FILE *fp)
 {
     XIO_memory *io = (XIO_memory *)__io;
-    XIO_printf(out, "XIO_memory: size=%zu", io->size);
+    fprintf(fp, "XIO_MEMORY(size=%zu)", io->size);
 }
 
-const XIO_METHOD XIO_METHOD_MEMORY = {
-    .read  = _xio_read,
-    .write = _xio_write,
-    .flush = _xio_flush,
-    .close = _xio_close,
-    .dump  = _xio_dump,
-};
-
-XIO *XIO_new_r_mem(const void *data, size_t datalen, bool close_free)
+XIO *XIO_new_memory(const void *data, size_t datalen, bool close_free)
 {
-    XIO_memory *io            = (XIO_memory *)malloc(sizeof(XIO_memory));
-    io->base.can_read         = true;
-    io->base.can_write        = false;
-    io->base.release_resource = close_free;
-    io->base.methods          = (XIO_METHOD *)&XIO_METHOD_MEMORY;
-    io->buffer                = (uint8_t *)data;
-    io->size                  = datalen;
-    io->ptr                   = io->buffer;
+    XIO_memory *io = (XIO_memory *)malloc(sizeof(XIO_memory));
+    memset(io, 0, sizeof(XIO_memory));
+    *io = (XIO_memory){
+        .base =
+            {
+                .read  = _read_,
+                .write = _write_,
+                .flush = _flush_,
+                .close = _close_,
+                .dump  = _dump,
+                .type  = XIO_TYPE_MEMORY,
+                .flags = close_free ? XIO_FLAG_CLOSE : 0,
+            },
+        .buffer = (uint8_t *)data,
+        .size   = datalen,
+        .ptr    = (uint8_t *)data,
+    };
     return (XIO *)io;
 }
-XIO *XIO_new_from_string(const char *str, bool close_free)
+XIO *XIO_new_string(const char *str, bool close_free)
 {
-    return XIO_new_r_mem(str, strlen(str), close_free);
+    return XIO_new_memory(str, strlen(str), close_free);
 }

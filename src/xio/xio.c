@@ -1,4 +1,4 @@
-#include "xio_interface.h"
+#include "xio_internal.h"
 #include <global.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -6,19 +6,19 @@
 
 size_t XIO_read(XIO *io, uint8_t *__ptr, size_t __maxlen)
 {
-    if (io->can_read)
+    if (io == NULL || io->read == NULL)
     {
-        return io->methods->read(io, __ptr, __maxlen);
+        return 0;
     }
-    return 0;
+    return io->read(io, __ptr, __maxlen);
 }
 size_t XIO_write(XIO *io, const uint8_t *__ptr, size_t __len)
 {
-    if (io->can_write)
+    if (io == NULL || io->write == NULL)
     {
-        return io->methods->write(io, __ptr, __len);
+        return 0;
     }
-    return 0;
+    return io->write(io, __ptr, __len);
 }
 size_t XIO_printf(XIO *io, const char *format, ...)
 {
@@ -39,18 +39,50 @@ size_t XIO_printf(XIO *io, const char *format, ...)
 }
 void XIO_flush(XIO *io)
 {
-    io->methods->flush(io);
+    if (io == NULL || io->flush == NULL)
+    {
+        return;
+    }
+    io->flush(io);
 }
 void XIO_close(XIO *io)
 {
+    if (io == NULL || io->close == NULL)
+    {
+        return;
+    }
     XIO_flush(io);
-    io->methods->close(io);
+    io->close(io);
 }
-void XIO_dump(XIO *io, XIO *out)
+static void _dump_xio(XIO *io, FILE *fp)
 {
-    io->methods->dump(io, out);
+    if (io->dump)
+    {
+        io->dump(io, fp);
+    }
+    else
+    {
+        fprintf(fp, "TYPE:%d", io->type);
+    }
 }
-void XIO_copy(XIO *in, XIO *out)
+void XIO_dump_chain(XIO *io, FILE *fp)
+{
+    if (io == NULL)
+    {
+        fprintf(fp, "NULL");
+        return;
+    }
+    while (io->target != NULL)
+    {
+        _dump_xio(io, fp);
+        fprintf(fp, " === ");
+        io = io->target;
+    }
+    _dump_xio(io, fp);
+}
+
+
+void XIO_drain(XIO *in, XIO *out)
 {
     uint8_t buf[1024];
     size_t len;
@@ -59,4 +91,21 @@ void XIO_copy(XIO *in, XIO *out)
     {
         XIO_write(out, buf, len);
     }
+}
+bool XIO_isatty(XIO *io)
+{
+    FILE *fp = XIO_FILE_get_fp(io);
+    if (fp == NULL)
+    {
+        return false;
+    }
+    return isatty(fileno(fp));
+}
+XIO *XIO_get_raw(XIO *io)
+{
+    if (io->target == NULL)
+    {
+        return io;
+    }
+    return XIO_get_raw(io->target);
 }

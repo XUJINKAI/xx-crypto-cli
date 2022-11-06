@@ -9,12 +9,19 @@
       "installRoot": "${projectDir}\\build-win\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "ENABLE_BROKEN_CRYPTO",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
     },
     {
       "name": "x64-Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "buildRoot": "${projectDir}\\build-win\\build\\${name}",
       "installRoot": "${projectDir}\\build-win\\install\\${name}",
       "cmakeCommandArgs": "",

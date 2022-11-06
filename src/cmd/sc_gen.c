@@ -1,10 +1,10 @@
-#include "cmd/io_helper.h"
+#include "cmd_helper.h"
 #include "cmdparser.h"
 #include "cross-platform/unistd.h"
 #include "global.h"
 
-static void gen_before(cmdp_before_param_st *params);
-static cmdp_action_t gen_process(cmdp_process_param_st *params);
+
+static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
@@ -29,26 +29,12 @@ cmdp_command_st sc_gen = {
             {'O', "out-format", "Output Format", CMDP_TYPE_STRING_PTR, &gen_args.outformat, "<FORMAT>"},
             {0},
         },
-    .fn_before  = gen_before,
-    .fn_process = gen_process,
+    .fn_process = __process,
 };
 
-static void gen_before(cmdp_before_param_st *params)
+static cmdp_action_t __process(cmdp_process_param_st *params)
 {
-    memset(&gen_args, 0, sizeof(gen_args));
-    gen_args.fix_str     = "y";
-    gen_args.interval_ms = 100;
-    gen_args.count_line  = false;
-}
-static cmdp_action_t gen_process(cmdp_process_param_st *params)
-{
-    XIO_CMD_OUT_PARAM out_param = {
-        .filename      = gen_args.outfile,
-        .file_deffmt   = "bin",
-        .stdout_deffmt = "bin",
-        .format        = gen_args.outformat,
-    };
-    XIO *outstream = XIO_new_cmd_outstream(&out_param);
+    XIO *outstream = cmd_get_outstream(gen_args.outfile, true);
     for (int i = 0; i < gen_args.total_repeat || gen_args.total_repeat == 0; i++)
     {
         if (gen_args.count_line)

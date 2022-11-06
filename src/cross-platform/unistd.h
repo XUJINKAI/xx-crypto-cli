@@ -5,10 +5,12 @@
 #endif
 
 #if defined(_WIN32)
-#include <io.h>
-#include <process.h>
 #include <windows.h>
+
+#include <io.h>
 #define isatty _isatty
+
+#include <process.h>
 #define getpid _getpid
 #endif
 

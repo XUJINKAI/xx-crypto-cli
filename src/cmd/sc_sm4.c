@@ -1,124 +1,108 @@
-#include "cc/xcrypto.h"
-#include "cmd/io_helper.h"
+#include "cc/cipher.h"
+#include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/hex.h"
+#include "gmssl/pbkdf2.h"
 #include "gmssl/sm3.h"
 
-static void sm4_before(cmdp_before_param_st *params);
-static cmdp_action_t sm4_process(cmdp_process_param_st *params);
+static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
     bool decrypt;
-    char *phrase;
+    char *mode;
     char *key;
     char *iv;
-    char *informat;
-    char *outformat;
+    char *phrase;
+    char *text;
     char *infile;
+    char *inform;
     char *outfile;
-} sm4_args;
+    char *outform;
+    bool hex;
+} __args;
 
 cmdp_command_st sc_sm4 = {
     .name = "sm4",
-    .desc = "Encrypt or decrypt with SM4",
-    // .doc  = "Usage: sm4 [-d] [-p | -k,--iv] [infile [outfile]]\n",
+    .desc = "SM4 Symmetric Algorithm",
+    .doc  = "Usage: sm4 [-d] [-p | --key,--iv] [OPTIONS]\n",
     .options =
         (cmdp_option_st[]){
-            {'d', "decrypt", "decrypt", CMDP_TYPE_BOOL, &sm4_args.decrypt},
-            {'p', "phrase", "phrase to generate key and iv", CMDP_TYPE_STRING_PTR, &sm4_args.phrase},
-            {'k', "key", "key (16 bytes)", CMDP_TYPE_STRING_PTR, &sm4_args.key, "<hex>"},
-            {0, "iv", "IV (16 bytes)", CMDP_TYPE_STRING_PTR, &sm4_args.iv, "<hex>"},
-            {'I', "in-fmt", "Input Format", CMDP_TYPE_STRING_PTR, &sm4_args.informat, "<FORMAT>"},
-            {'O', "out-fmt", "Output Format", CMDP_TYPE_STRING_PTR, &sm4_args.outformat, "<FORMAT>"},
-            {'i', "infile", "Input File", CMDP_TYPE_STRING_PTR, &sm4_args.infile, "<FILE>"},
-            {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &sm4_args.outfile, "<FILE>"},
+            CMDP_OPT_DOC("\nGeneral options:\n"),
+            {'d', "decrypt", "decrypt", CMDP_TYPE_BOOL, &__args.decrypt},
+            {0, "mode", "Mode: cbc(default), ctr", CMDP_TYPE_STRING_PTR, &__args.mode, "<MODE>"},
+            {0, "key", "Raw key, in hex (16 bytes)", CMDP_TYPE_STRING_PTR, &__args.key, "<hex>"},
+            {0, "iv", "IV, in hex (16 bytes)", CMDP_TYPE_STRING_PTR, &__args.iv, "<hex>"},
+            {'p', "phrase", "Passphrase to generate key and iv", CMDP_TYPE_STRING_PTR, &__args.phrase},
+            CMDP_OPT_DOC("\nInput options:\n"),
+            _opt_intext(__args.text, ),
+            _opt_infile(__args.infile, ),
+            _opt_informat(__args.inform, ),
+            CMDP_OPT_DOC("\nOutput options:\n"),
+            _opt_outfile(__args.outfile, ),
+            _opt_outformat(__args.outform, ),
+            {0, "hex", "Shortcut for --outform hex", CMDP_TYPE_BOOL, &__args.hex},
             {0},
         },
-    .fn_before  = sm4_before,
-    .fn_process = sm4_process,
+    .doc_tail = "\n"
+                "Global options also available: --verbose, --debug, etc.\n"
+                "FORMAT: bin, hex.\n",
+    .fn_process = __process,
 };
 
 
-static void sm4_before(cmdp_before_param_st *params)
+static cmdp_action_t __process(cmdp_process_param_st *params)
 {
-    memset(&sm4_args, 0, sizeof(sm4_args));
-}
-static cmdp_action_t sm4_process(cmdp_process_param_st *params)
-{
-    // char *prog      = NULL;
-    uint8_t key[16] = {0};
-    uint8_t iv[16]  = {0};
-    XIO *instream   = NULL;
-    XIO *outstream  = NULL;
-    int ret         = X_FAILURE;
+    CMDP_CHECK_EMPTY_HELP(params);
+    CMDP_CHECK_ARG_COUNT(params, 0, 0);
+    CMDP_CHECK_OPT_CONFICT(__args.phrase && (__args.key || __args.iv), "--phrase", "--key/--iv");
+    CMDP_CHECK_OPT_NEITHER(__args.phrase || __args.key, "--phrase", "--key/--iv");
+    CMDP_CHECK_OPT_TOGETHER(XOR(__args.key, __args.iv), "--key", "--iv");
+    CMDP_CHECK_OPT_CONFICT(__args.text && __args.infile, "--text", "--in");
+    CMDP_CHECK_OPT_CONFICT(__args.outform && __args.hex, "--outform", "--hex");
 
-    if (params->argc == 0 && params->opts == 0)
+    RESULT ret             = RET_FAIL;
+    CC_SM4_PARAM sm4_param = {0};
+    FORMAT_t inform        = __args.decrypt ? FORMAT_HEX : FORMAT_BIN;
+    inform                 = cmd_get_format(__args.inform, inform);
+    FORMAT_t outform       = __args.decrypt ? FORMAT_BIN : FORMAT_HEX;
+    outform                = cmd_get_format(__args.outform, outform);
+    if (__args.hex)
     {
-        return CMDP_ACT_SHOW_HELP;
+        outform = FORMAT_HEX;
     }
-    if (params->argc > 1)
+    XIO *instream  = cmd_get_instream(__args.text, __args.infile, true);
+    XIO *outstream = cmd_get_outstream(__args.outfile, true);
+    instream       = cmd_wrap_stream(instream, inform);
+    outstream      = cmd_wrap_stream(outstream, outform);
+
+    if (__args.phrase)
     {
-        LOG_C(0, "too many arguments");
-        goto end;
-    }
-    if (sm4_args.phrase && (sm4_args.key || sm4_args.iv))
-    {
-        fprintf(stderr, "Can't use --phrase and --key/--iv together.");
-        return CMDP_ACT_FAIL;
-    }
-    if (sm4_args.phrase)
-    {
-        SM3_CTX ctx;
-        uint8_t dgst[32];
-        sm3_init(&ctx);
-        sm3_update(&ctx, sm4_args.phrase, strlen(sm4_args.phrase));
-        sm3_finish(&ctx, dgst);
-        memcpy(key, dgst, 16);
-        memcpy(iv, dgst + 16, 16);
+        pbkdf2_hmac_sm3_genkey(__args.phrase, strlen(__args.phrase), NULL, 0, 10000, sizeof(sm4_param),
+                               (uint8_t *)&sm4_param);
     }
     else
     {
-        hex_to_bytes(sm4_args.key, strlen(sm4_args.key), key, NULL);
-        hex_to_bytes(sm4_args.iv, strlen(sm4_args.iv), iv, NULL);
-    }
-    if (params->argc > 0 && sm4_args.infile)
-    {
-        LOG_C(0, "Can't use argument text and input file together.");
-        goto end;
+        hex_to_bytes(__args.key, strlen(__args.key), sm4_param.key, NULL);
+        hex_to_bytes(__args.iv, strlen(__args.iv), sm4_param.iv, NULL);
     }
 
-    XIO_CMD_IN_PARAM in_param = {
-        .filename     = sm4_args.infile,
-        .file_deffmt  = "bin",
-        .argument     = params->argc > 0 ? params->argv[0] : NULL,
-        .arg_deffmt   = sm4_args.decrypt ? "hex" : "bin",
-        .stdin_deffmt = sm4_args.decrypt ? "hex" : "bin",
-        .format       = sm4_args.informat,
-    };
-    instream = XIO_new_cmd_instream(&in_param);
+    LOG_SECRET_HEX("key=", sm4_param.key, sizeof(sm4_param.key));
+    LOG_SECRET_HEX("iv =", sm4_param.iv, sizeof(sm4_param.iv));
 
-    XIO_CMD_OUT_PARAM out_param = {
-        .filename      = sm4_args.outfile,
-        .file_deffmt   = "bin",
-        .stdout_deffmt = sm4_args.decrypt ? "bin" : "hex",
-        .format        = sm4_args.outformat,
-    };
-    outstream = XIO_new_cmd_outstream(&out_param);
-
-    if (sm4_args.decrypt)
+    if (__args.decrypt)
     {
-        ret = x_sm4_cbc_decrypt(key, iv, instream, outstream);
+        ret = cc_sm4_cbc_decrypt(&sm4_param, instream, outstream);
     }
     else
     {
-        ret = x_sm4_cbc_encrypt(key, iv, instream, outstream);
+        ret = cc_sm4_cbc_encrypt(&sm4_param, instream, outstream);
     }
-    ret = X_SUCCESS;
 
 end:
     XIO_close(instream);
     XIO_close(outstream);
-    return ret == X_SUCCESS ? CMDP_ACT_OVER : CMDP_ACT_FAIL;
+    clear_buffer(&sm4_param, sizeof(sm4_param));
+    return ret == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR;
 }

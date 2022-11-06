@@ -1,10 +1,9 @@
-#include "cmd/io_helper.h"
+#include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/sm2.h"
 
-static void fn_before(cmdp_before_param_st *params);
-static cmdp_action_t fn_process(cmdp_process_param_st *params);
+static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
@@ -14,9 +13,9 @@ static struct
     char *outfile;
 } args;
 
-cmdp_command_st sc_ecdhe = {
-    .name = "ecdhe",
-    .desc = "ecdh key exchange",
+cmdp_command_st sc_sm2_sign = {
+    .name = "sm2",
+    .desc = "SM2 asymmetric algorithm",
     .doc  = "ecdhe [OPTIONS] <TEXT>\n",
     .options =
         (cmdp_option_st[]){
@@ -26,18 +25,13 @@ cmdp_command_st sc_ecdhe = {
             {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &args.outfile, "<filepath>"},
             {0},
         },
-    .fn_before  = fn_before,
-    .fn_process = fn_process,
+    .fn_process = __process,
 };
 
-static void fn_before(cmdp_before_param_st *params)
-{
-    memset(&args, 0, sizeof(args));
-}
-static cmdp_action_t fn_process(cmdp_process_param_st *params)
+static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     SM2_KEY key;
     sm2_key_generate(&key);
 
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }

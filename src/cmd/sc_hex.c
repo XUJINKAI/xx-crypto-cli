@@ -1,17 +1,17 @@
-#include "cmd/io_helper.h"
+#include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
 #include "gmssl/hex.h"
 
-static void hex_before(cmdp_before_param_st *params);
-static cmdp_action_t hex_process(cmdp_process_param_st *params);
+
+static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
     bool decode;
     char *infile;
     char *outfile;
-} hex_args;
+} __args;
 
 cmdp_command_st sc_hex = {
     .name = "hex",
@@ -19,59 +19,38 @@ cmdp_command_st sc_hex = {
     .doc  = "hex [-d] STRING\n",
     .options =
         (cmdp_option_st[]){
-            {'d', "decode", "decode", CMDP_TYPE_BOOL, &hex_args.decode},
-            {'r', "read", "input file", CMDP_TYPE_STRING_PTR, &hex_args.infile, "<file>"},
-            {'w', "write", "output file", CMDP_TYPE_STRING_PTR, &hex_args.outfile, "<file>"},
+            {'d', "decode", "decode", CMDP_TYPE_BOOL, &__args.decode},
+            _opt_infile(__args.infile, ),
+            _opt_outfile(__args.outfile, ),
             {0},
         },
-    .fn_before  = hex_before,
-    .fn_process = hex_process,
+    .fn_process = __process,
 };
 
+static cmdp_action_t __process(cmdp_process_param_st *params)
+{
+    CMDP_CHECK_ARG_COUNT(params, 0, 1);
 
-static void hex_before(cmdp_before_param_st *params)
-{
-    memset(&hex_args, 0, sizeof(hex_args));
-}
-static cmdp_action_t hex_process(cmdp_process_param_st *params)
-{
-    if (params->argc == 0 && params->opts == 0)
-    {
-        return CMDP_ACT_SHOW_HELP;
-    }
-    if (params->argc > 1)
-    {
-        LOG_C(0, "too many arguments");
-        return CMDP_ACT_FAIL;
-    }
     XIO *instream  = NULL;
     XIO *outstream = NULL;
-    if (hex_args.infile)
+
+    instream  = cmd_get_instream(CMDP_GET_ARG(params, 0), __args.infile, true);
+    outstream = cmd_get_outstream(__args.outfile, true);
+
+    if (__args.decode)
     {
-        instream = XIO_new_file(hex_args.infile, "rb");
+        instream = XIO_newf_hex(instream);
     }
     else
     {
-        instream = XIO_new_from_string(params->argv[0], false);
+        outstream = XIO_newf_hex(outstream);
     }
-    if (hex_args.outfile)
-    {
-        outstream = XIO_new_file(hex_args.outfile, "wb");
-    }
-    else
-    {
-        outstream = XIO_new_fp(stdout, false);
-    }
-    if (hex_args.decode)
-    {
-        instream = XIO_new_filter_hex(instream);
-    }
-    else
-    {
-        outstream = XIO_new_filter_hex(outstream);
-    }
-    XIO_copy(instream, outstream);
-    XIO_close(instream);
-    XIO_close(outstream);
-    return CMDP_ACT_OVER;
+    LOG_DBG_XIO("in : ", instream);
+    LOG_DBG_XIO("out: ", outstream);
+
+    XIO_drain(instream, outstream);
+
+    XIO_CLOSE_SAFE(instream);
+    XIO_CLOSE_SAFE(outstream);
+    return CMDP_ACT_OK;
 }
