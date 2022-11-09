@@ -12,6 +12,7 @@ struct
 static cmdp_action_t main_process(cmdp_process_param_st *params);
 
 extern cmdp_command_st sc_rand;
+extern cmdp_command_st sc_randcheck;
 extern cmdp_command_st sc_hash;
 extern cmdp_command_st sc_sm2;
 extern cmdp_command_st sc_sm4;
@@ -33,6 +34,7 @@ cmdp_command_st main_cmdp = {
             &sc_hash,
             &sc_sm2,
             &sc_sm4,
+            &sc_randcheck,
             CMDP_DOC("\nData process:\n"),
             &sc_data,
             &sc_hex,

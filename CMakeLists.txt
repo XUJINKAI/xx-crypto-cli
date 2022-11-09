@@ -25,6 +25,9 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 add_executable(xx ${src})
 target_link_libraries(xx gmssl)
+if(UNIX)
+target_link_libraries(xx m)
+endif()
 
 if(UNIX)
     INSTALL(TARGETS xx RUNTIME DESTINATION bin)
