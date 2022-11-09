@@ -19,7 +19,7 @@ static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
         return 0;
     }
     size_t bytes_len;
-    if (hex_to_bytes(hex_buf, hex_len, __ptr, &bytes_len) < 0)
+    if (hex_to_bytes((char *)hex_buf, hex_len, __ptr, &bytes_len) < 0)
     {
         free(hex_buf);
         LOG_ERR("hex decode error");

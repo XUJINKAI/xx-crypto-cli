@@ -6,6 +6,8 @@ Windows/Linux Crypto CLI Toolbox. 跨平台密码工具箱。
 
 ## Build
 
+Run `git submodule update --init` to fetch the submodules.
+
 Linux:
 
 ```sh
@@ -23,6 +25,12 @@ cd build-win
 cmake ..
 cmake --build . --config release
 ```
+
+## Links
+
+[GmSSL](https://github.com/guanzhi/GmSSL)
+
+[cmdparser](https://github.com/XUJINKAI/cmdparser)
 
 ## License
 

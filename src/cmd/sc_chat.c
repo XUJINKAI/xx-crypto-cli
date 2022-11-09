@@ -109,7 +109,7 @@ static void chat_session_start(struct chat_session_st *session)
             for (size_t i = 0; i < lineSize; i += readin)
             {
                 readin = lineSize - i > 1024 ? 1024 : lineSize - i;
-                sm4_cbc_encrypt_update(&enc_ctx, line + i, readin, cipher_block, &cipher_block_len);
+                sm4_cbc_encrypt_update(&enc_ctx, (uint8_t *)line + i, readin, cipher_block, &cipher_block_len);
                 char *cipher_hex = bytes_to_hex(cipher_block, cipher_block_len);
                 XIO_printf(session->out_stream, "%s", cipher_hex);
                 free(cipher_hex);

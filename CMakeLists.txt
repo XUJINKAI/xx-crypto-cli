@@ -6,6 +6,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_definitions(-DENABLE_BROKEN_CRYPTO)
 option(ENABLE_BROKEN_CRYPTO "Enable broken crypto" ON)
+option(ENABLE_RDRND "Enable Intel RDRND instructions" ON)
 add_subdirectory(GmSSL EXCLUDE_FROM_ALL)
 
 include_directories(
@@ -37,3 +38,5 @@ execute_process(
 )
 add_definitions(-DGIT_TAG="${GIT_TAG}")
 message(STATUS "GIT_TAG: ${GIT_TAG}")
+
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")

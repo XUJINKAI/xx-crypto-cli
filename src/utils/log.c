@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 static FILE *log_stream           = NULL;
-static bool log_enable[_LOGT_MAX] = {true, false, false, false};
+static bool log_enable[_LOGT_MAX] = {true, true, false, false};
 
 #define CHECK_LOG_STREAM()                                                                                             \
     if (log_stream == NULL)                                                                                            \

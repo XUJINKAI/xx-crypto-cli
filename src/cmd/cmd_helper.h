@@ -10,11 +10,11 @@
     }
 #define _opt_infile(opt, more)                                                                                         \
     {                                                                                                                  \
-        'I', "in", "Input File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                            \
+        0, "in", "Input File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                              \
     }
 #define _opt_outfile(opt, more)                                                                                        \
     {                                                                                                                  \
-        'O', "out", "Output File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                          \
+        0, "out", "Output File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                            \
     }
 #define _opt_informat(opt, more)                                                                                       \
     {                                                                                                                  \

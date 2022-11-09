@@ -3,4 +3,6 @@
 #include "global.h"
 #include "xio/xio.h"
 
-RESULT cc_random_bytes(XIO *out, size_t len);
+// source: NULL(soft), rdrand, rdseed, sdf:LIB.so
+RESULT cc_random_bytes(const char *source, XIO *out, size_t len);
+RESULT cc_random_bytes_sdf(const char *libname, XIO *out, size_t len);

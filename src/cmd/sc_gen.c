@@ -49,4 +49,5 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         sleep_ms(gen_args.interval_ms);
     }
     XIO_close(outstream);
+    return RESULT_TO_CMDP_ACTION(RET_OK);
 }

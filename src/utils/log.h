@@ -7,9 +7,9 @@
 typedef enum
 {
     _LOGT_NORMAL = 0,
-    _LOGT_SECRET,
     _LOGT_VERBOSE,
     _LOGT_DEBUG,
+    _LOGT_SECRET,
     _LOGT_MAX,
 } _LOG_TYPE;
 

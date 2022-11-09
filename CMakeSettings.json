@@ -4,19 +4,14 @@
       "name": "x64-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
       "buildRoot": "${projectDir}\\build-win\\build\\${name}",
       "installRoot": "${projectDir}\\build-win\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "variables": [
-        {
-          "name": "ENABLE_BROKEN_CRYPTO",
-          "value": "True",
-          "type": "BOOL"
-        }
-      ]
+      "ctestCommandArgs": ""
     },
     {
       "name": "x64-Release",
@@ -27,7 +22,9 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ]
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ]
     }
   ]
 }
