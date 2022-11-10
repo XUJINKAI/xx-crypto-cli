@@ -175,7 +175,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
     if (arg_chat.init + arg_chat.join + arg_chat.restore + arg_chat.psk != 1)
     {
-        LOG_ERR("Only one of --init, --join, --restore, --psk should be specified");
+        LOG_ERROR("Only one of --init, --join, --restore, --psk should be specified");
         return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 
@@ -204,7 +204,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
             free(resp_hex);
             if (other_ret != RET_OK)
             {
-                LOG_ERR("Invalid response");
+                LOG_ERROR("Invalid response");
             }
         } while (other_ret != RET_OK);
         uint8_t result_point[64];
@@ -215,13 +215,13 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            LOG_ERR("Invalid argument.");
+            LOG_ERROR("Invalid argument.");
             return CMDP_ACT_ERROR;
         }
         SM2_POINT other_pk;
         if (sm2_point_from_string(&other_pk, params->argv[0]) != RET_OK)
         {
-            LOG_ERR("Invalid argument.");
+            LOG_ERROR("Invalid argument.");
             return CMDP_ACT_ERROR;
         }
 
@@ -249,7 +249,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
 
         if (strlen(params->argv[0]) != 64)
         {
-            LOG_ERR("Invalid KEY length");
+            LOG_ERROR("Invalid KEY length");
             return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
         }
         size_t outlen;
@@ -260,14 +260,14 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     {
         if (params->argc != 1)
         {
-            LOG_ERR("--psk requires an argument");
+            LOG_ERROR("--psk requires an argument");
             return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
         }
         chat_kdf(params->argv[0], strlen(params->argv[0]), session.key, session.iv);
     }
     else
     {
-        LOG_ERR("not implemented");
+        LOG_ERROR("not implemented");
         return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 

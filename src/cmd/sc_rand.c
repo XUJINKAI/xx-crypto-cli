@@ -11,7 +11,7 @@ static struct
     char *size_str;
     char *source;
     char *outfile;
-    char *outformat;
+    bool out_fmt_hex;
     bool noout;
     bool check;
 } rand_args;
@@ -24,10 +24,10 @@ cmdp_command_st sc_rand = {
     .options =
         (cmdp_option_st[]){
             {'n', NULL, "Number of bytes", CMDP_TYPE_STRING_PTR, &rand_args.size_str, "<SIZE>"},
-            {'S', "source", "Source of random bytes", CMDP_TYPE_STRING_PTR, &rand_args.source, "<SOURCE>"},
+            {'S', "source", "Source of generator", CMDP_TYPE_STRING_PTR, &rand_args.source, "<SOURCE>"},
+            {0, "hex", "Output hex format", CMDP_TYPE_BOOL, &rand_args.out_fmt_hex},
             _opt_outfile(rand_args.outfile, ),
-            _opt_outformat(rand_args.outformat, ),
-            {0, "noout", "Do not output the random bytes", CMDP_TYPE_BOOL, &rand_args.noout, NULL},
+            {0, "noout", "Do not output the random bytes", CMDP_TYPE_BOOL, &rand_args.noout},
             // {0, "check", "Check the random bytes", CMDP_TYPE_BOOL, &rand_args.check, NULL},
             {0},
         },
@@ -45,6 +45,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
 
     RESULT ret     = RET_FAIL;
     XIO *outstream = NULL;
+
     long len;
     if (string_to_long_ex(rand_args.size_str, &len) != RET_OK)
     {
@@ -52,16 +53,16 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
     if (len < 0)
     {
-        LOG_ERR("Invalid length: %ld", len);
+        LOG_ERROR("Invalid length: %ld", len);
         goto end;
     }
-    LOG_VERBOSE("rand len=%zu", len);
+    LOG_VERBOSE("rand len=%ld", len);
+
+    FORMAT_t fmt_out = rand_args.out_fmt_hex ? FORMAT_HEX : FORMAT_BIN;
+    LOG_VERBOSE("rand fmt=%s", format_to_string(fmt_out));
 
     outstream = cmd_get_outstream(rand_args.outfile, true);
-
-    FORMAT_t fmt_out = XIO_isatty(outstream) ? FORMAT_HEX : FORMAT_BIN;
-    fmt_out          = cmd_get_format(rand_args.outformat, fmt_out);
-    outstream        = cmd_wrap_stream(outstream, fmt_out);
+    outstream = cmd_wrap_stream(outstream, fmt_out);
 
     if (rand_args.noout)
     {

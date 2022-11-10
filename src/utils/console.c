@@ -1,4 +1,5 @@
 #include "console.h"
+#include "global.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,17 +78,11 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream)
 #endif
 
 
-char *console_readline(const char *color, const char *prompt)
+char *console_readline(tty_color color, const char *prompt)
 {
-    if (color != NULL && isatty(fileno(stdout)))
-    {
-        fputs(color, stdout);
-    }
+    tty_put_color(stdout, color);
     fprintf(stdout, "%s", prompt);
-    if (color != NULL && isatty(fileno(stdout)))
-    {
-        fputs(TC_RESET, stdout);
-    }
+    tty_put_color(stdout, TC_RESET);
     char *line       = NULL;
     size_t __mem_len = 0;
     ssize_t len      = getline(&line, &__mem_len, stdin);
@@ -149,7 +144,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
         if (newStrings == NULL)
         {
-            LOG_ERR("Cannot allocate string.");
+            LOG_ERROR("Cannot allocate string.");
             return FALSE;
         }
 
@@ -212,7 +207,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
                  */
                 if (ch == '\0')
                 {
-                    LOG_ERR("Bad quoted character.");
+                    LOG_ERROR("Bad quoted character.");
                     return FALSE;
                 }
 
@@ -255,7 +250,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
          */
         if (quote)
         {
-            LOG_ERR("Unmatched quote character.");
+            LOG_ERROR("Unmatched quote character.");
             return FALSE;
         }
 
@@ -281,7 +276,7 @@ int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv)
 
             if (newArgTable == NULL)
             {
-                LOG_ERR("No memory for arg list.");
+                LOG_ERROR("No memory for arg list.");
                 return FALSE;
             }
 

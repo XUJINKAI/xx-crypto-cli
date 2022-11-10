@@ -1,7 +1,6 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,7 +10,6 @@
 #define _DEBUG
 #endif
 
-#define STREQ(a, b)    (strcmp((a), (b)) == 0)
 #define HAS_FLAG(a, b) (((a) & (b)) == (b))
 #define XOR(a, b)      ((a) && !(b)) || (!(a) && (b))
 
@@ -25,6 +23,7 @@ typedef struct
 {
     FILE *in;
     FILE *out;
+    bool no_color;
     bool repl_mode;
     bool sigint_no_exit;
 } APP_STATE;
@@ -34,8 +33,8 @@ extern APP_STATE g_state;
 #include "gmssl/mem.h"
 #define clear_buffer gmssl_secure_clear
 
-#include "cross-platform/string.h"
-#include "cross-platform/unistd.h"
+#include "utils/string.h"
+#include "utils/unistd.h"
 
 #include "types/xx_mem.h"
 #include "types/xx_str.h"

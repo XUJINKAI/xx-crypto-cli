@@ -12,30 +12,30 @@ RESULT cc_sm4_cbc_encrypt(CC_SM4_PARAM *param, XIO *in, XIO *out)
 
     if (sm4_cbc_encrypt_init(&cbc_ctx, param->key, param->iv) != 1)
     {
-        LOG_ERR("sm4_cbc_encrypt_init error");
+        LOG_ERROR("sm4_cbc_encrypt_init error");
         goto end;
     }
     while ((inlen = XIO_read(in, inbuf, sizeof(inbuf))) > 0)
     {
         if (sm4_cbc_encrypt_update(&cbc_ctx, inbuf, inlen, outbuf, &outlen) != 1)
         {
-            LOG_ERR("sm4_cbc_encrypt_update error");
+            LOG_ERROR("sm4_cbc_encrypt_update error");
             goto end;
         }
         if (XIO_write(out, outbuf, outlen) != outlen)
         {
-            LOG_ERR("XIO_fwrite error");
+            LOG_ERROR("XIO_fwrite error");
             goto end;
         }
     }
     if (sm4_cbc_encrypt_finish(&cbc_ctx, outbuf, &outlen) != 1)
     {
-        LOG_ERR("sm4_cbc_encrypt_finish error");
+        LOG_ERROR("sm4_cbc_encrypt_finish error");
         goto end;
     }
     if (XIO_write(out, outbuf, outlen) != outlen)
     {
-        LOG_ERR("XIO_fwrite error");
+        LOG_ERROR("XIO_fwrite error");
         goto end;
     }
     ret = RET_OK;
@@ -57,30 +57,30 @@ RESULT cc_sm4_cbc_decrypt(CC_SM4_PARAM *param, XIO *in, XIO *out)
 
     if (sm4_cbc_decrypt_init(&cbc_ctx, param->key, param->iv) != 1)
     {
-        LOG_ERR("sm4_cbc_decrypt_init error");
+        LOG_ERROR("sm4_cbc_decrypt_init error");
         goto end;
     }
     while ((inlen = XIO_read(in, inbuf, sizeof(inbuf))) > 0)
     {
         if (sm4_cbc_decrypt_update(&cbc_ctx, inbuf, inlen, outbuf, &outlen) != 1)
         {
-            LOG_ERR("sm4_cbc_decrypt_update error");
+            LOG_ERROR("sm4_cbc_decrypt_update error");
             goto end;
         }
         if (XIO_write(out, outbuf, outlen) != outlen)
         {
-            LOG_ERR("XIO_fwrite error");
+            LOG_ERROR("XIO_fwrite error");
             goto end;
         }
     }
     if (sm4_cbc_decrypt_finish(&cbc_ctx, outbuf, &outlen) != 1)
     {
-        LOG_ERR("sm4_cbc_decrypt_finish error");
+        LOG_ERROR("sm4_cbc_decrypt_finish error");
         goto end;
     }
     if (XIO_write(out, outbuf, outlen) != outlen)
     {
-        LOG_ERR("XIO_fwrite error");
+        LOG_ERROR("XIO_fwrite error");
         goto end;
     }
     ret = RET_OK;

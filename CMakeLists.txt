@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(crypto-tool)
 
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
@@ -20,13 +22,20 @@ file(GLOB_RECURSE src
     "cmdparser/cmdparser.c"
 )
 
+
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+if(UNIX)
+  # add_compile_options(-pedantic)
+  # add_compile_options(-Wall -Wextra)
+  # add_compile_options(-Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-label)
+  # add_compile_options(-Wno-missing-field-initializers -Wno-newline-eof -Wno-sometimes-uninitialized)
+endif()
 
 add_executable(xx ${src})
 target_link_libraries(xx gmssl)
 if(UNIX)
-target_link_libraries(xx m)
+  target_link_libraries(xx m)
 endif()
 
 if(UNIX)
@@ -41,5 +50,3 @@ execute_process(
 )
 add_definitions(-DGIT_TAG="${GIT_TAG}")
 message(STATUS "GIT_TAG: ${GIT_TAG}")
-
-message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")

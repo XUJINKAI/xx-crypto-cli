@@ -12,7 +12,7 @@ RESULT string_to_long(const char *str, long *result)
     long len     = strtol(str, &endptr, 10);
     if (endptr == str || *endptr != '\0')
     {
-        LOG_ERR("invalid number: %s", str);
+        LOG_ERROR("invalid number: %s", str);
         return RET_FAIL;
     }
     *result = len;
@@ -29,7 +29,7 @@ RESULT string_to_long_ex(const char *__str, long *result)
     }
 
     int base = 10;
-    if (strlen(str) > 2 && str[0] == '0' && str[1] == 'x')
+    if (str[0] == '0' && str[1] == 'x')
     {
         base = 16;
         str += 2;
@@ -39,7 +39,7 @@ RESULT string_to_long_ex(const char *__str, long *result)
     long len     = strtol(str, &endptr, base);
     if (endptr == str)
     {
-        LOG_ERR("invalid number: %s", str);
+        LOG_ERROR("invalid number: %s", str);
         return RET_FAIL;
     }
 
@@ -66,7 +66,7 @@ RESULT string_to_long_ex(const char *__str, long *result)
 
     if (*endptr != '\0')
     {
-        LOG_ERR("invalid number: %s", str);
+        LOG_ERROR("invalid number: %s", str);
         return RET_FAIL;
     }
 

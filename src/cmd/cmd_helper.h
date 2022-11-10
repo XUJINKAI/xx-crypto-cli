@@ -4,6 +4,29 @@
 #include "global.h"
 #include "xio/xio.h"
 
+#define FORMAT_TYPE_MAP(XX)                                                                                            \
+    XX(BIN)                                                                                                            \
+    XX(HEX)                                                                                                            \
+    XX(BASE64)
+
+#define XX(name) FORMAT_##name,
+typedef enum
+{
+    FORMAT_NONE = 0,
+    FORMAT_TYPE_MAP(XX)
+} FORMAT_t;
+#undef XX
+
+const char *format_to_string(FORMAT_t format);
+FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt);
+XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format);
+XIO *cmd_get_instream(char *text, char *filename, bool __stdin);
+XIO *cmd_get_outstream(char *filename, bool __stdout);
+
+
+#define CMDP_GET_ARG(params, index)   (params->argc > index ? params->argv[index] : NULL)
+#define RESULT_TO_CMDP_ACTION(result) (result == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR)
+
 #define _opt_intext(opt, more)                                                                                         \
     {                                                                                                                  \
         'T', "text", "Input Text", CMDP_TYPE_STRING_PTR, &opt, "<TEXT>", more                                          \
@@ -37,19 +60,19 @@
         LOG_DBG("params->argc: %d", params->argc);                                                                     \
         if (max == 0)                                                                                                  \
         {                                                                                                              \
-            LOG_ERR("NO need argument.");                                                                              \
+            LOG_ERROR("NO need argument.");                                                                            \
         }                                                                                                              \
         else if (params->argc > max)                                                                                   \
         {                                                                                                              \
-            LOG_ERR("Too many argument.");                                                                             \
+            LOG_ERROR("Too many argument.");                                                                           \
         }                                                                                                              \
         else if (params->argc < min)                                                                                   \
         {                                                                                                              \
-            LOG_ERR("Need argument.");                                                                                 \
+            LOG_ERROR("Need argument.");                                                                               \
         }                                                                                                              \
         else                                                                                                           \
         {                                                                                                              \
-            LOG_ERR("Invalid argument count.");                                                                        \
+            LOG_ERROR("Invalid argument count.");                                                                      \
         }                                                                                                              \
         return CMDP_ACT_ERROR;                                                                                         \
     }
@@ -57,37 +80,20 @@
 #define CMDP_CHECK_OPT_CONFICT(condition, opt1, opt2)                                                                  \
     if (condition)                                                                                                     \
     {                                                                                                                  \
-        LOG_ERR("Can't use %s and %s together.", opt1, opt2);                                                          \
+        LOG_ERROR("Can't use %s and %s together.", opt1, opt2);                                                        \
         return CMDP_ACT_ERROR;                                                                                         \
     }
 
 #define CMDP_CHECK_OPT_TOGETHER(condition, opt1, opt2)                                                                 \
     if (condition)                                                                                                     \
     {                                                                                                                  \
-        LOG_ERR("Must use %s and %s together.", opt1, opt2);                                                           \
+        LOG_ERROR("Must use %s and %s together.", opt1, opt2);                                                         \
         return CMDP_ACT_ERROR;                                                                                         \
     }
 
 #define CMDP_CHECK_OPT_NEITHER(condition, opt1, opt2)                                                                  \
     if (!(condition))                                                                                                  \
     {                                                                                                                  \
-        LOG_ERR("Must use one of %s or %s.", opt1, opt2);                                                              \
+        LOG_ERROR("Must use one of %s or %s.", opt1, opt2);                                                            \
         return CMDP_ACT_ERROR;                                                                                         \
     }
-
-#define CMDP_GET_ARG(params, index) (params->argc > index ? params->argv[index] : NULL)
-
-#define RESULT_TO_CMDP_ACTION(result) (result == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR)
-
-typedef enum
-{
-    FORMAT_NONE,
-    FORMAT_BIN,
-    FORMAT_HEX,
-    FORMAT_BASE64,
-} FORMAT_t;
-
-FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt);
-XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format);
-XIO *cmd_get_instream(char *text, char *filename, bool __stdin);
-XIO *cmd_get_outstream(char *filename, bool __stdout);

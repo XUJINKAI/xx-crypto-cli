@@ -31,14 +31,14 @@ cmdp_command_st main_cmdp = {
         (cmdp_command_st *[]){
             CMDP_DOC("\nStandard crypto:\n"),
             &sc_rand,
-            &sc_hash,
-            &sc_sm2,
-            &sc_sm4,
             &sc_randcheck,
+            &sc_hash,
+            // &sc_sm2,
+            &sc_sm4,
             CMDP_DOC("\nData process:\n"),
             &sc_data,
             &sc_hex,
-            &sc_base64,
+            // &sc_base64,
             CMDP_DOC("\nUtility:\n"),
             &sc_chat,
             &sc_gen,
@@ -52,6 +52,7 @@ cmdp_command_st main_cmdp = {
             {0, "log-secret", "Show secret log", CMDP_TYPE_BOOL, &arg_main.log_secret},
             {0, "log-verbose", "Show verbose log", CMDP_TYPE_BOOL, &arg_main.log_verbose},
             {0, "log-debug", "Show debug log", CMDP_TYPE_BOOL, &arg_main.log_debug},
+            {0, "no-color", "Print no color", CMDP_TYPE_BOOL, &g_state.no_color},
             {0, "version", "Show version", CMDP_TYPE_BOOL, &arg_main.version, CMDP_HIDE},
             {0},
         },
@@ -95,6 +96,9 @@ static cmdp_action_t main_process(cmdp_process_param_st *params)
 
     if (params->next == NULL)
     {
+#ifdef _WIN32
+        g_state.repl_mode = true;
+#endif
         return CMDP_ACT_OK | CMDP_ACT_SHOW_HELP;
     }
 

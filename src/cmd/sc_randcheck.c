@@ -37,7 +37,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     FILE *fp = fopen(testfile, "rb");
     if (fp == NULL)
     {
-        LOG_ERR("Failed to open file: %s", testfile);
+        LOG_ERROR("Failed to open file: %s", testfile);
         goto end;
     }
     fseek(fp, 0, SEEK_END);
@@ -46,12 +46,12 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     data = malloc(len);
     if (data == NULL)
     {
-        LOG_ERR("Failed to alloc memory");
+        LOG_ERROR("Failed to alloc memory");
         goto end;
     }
     if (fread(data, 1, len, fp) != len)
     {
-        LOG_ERR("Failed to read file: %s", testfile);
+        LOG_ERROR("Failed to read file: %s", testfile);
         goto end;
     }
     fclose(fp);

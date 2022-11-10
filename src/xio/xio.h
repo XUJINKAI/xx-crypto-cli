@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/unistd.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ typedef struct XIO_st XIO;
 
 size_t XIO_read(XIO *io, uint8_t *__ptr, size_t __maxlen);
 size_t XIO_write(XIO *io, const uint8_t *__ptr, size_t __len);
-size_t XIO_printf(XIO *io, const char *format, ...);
+size_t XIO_printf(XIO *io, const char *format, ...) __printflike(2, 3);
 void XIO_flush(XIO *io);
 int XIO_seek(XIO *io, int64_t offset, int whence);
 int64_t XIO_tell(XIO *io);
@@ -45,7 +46,7 @@ void XIO_close(XIO *io);
 void XIO_dump_chain(XIO *io, FILE *fp);
 
 void XIO_drain(XIO *in, XIO *out);
-bool XIO_isatty(XIO *io);
+bool XIO_isatty(XIO *io) __deprecated;
 XIO *XIO_get_raw(XIO *io);
 int XIO_get_flag(XIO *io);
 void XIO_set_flag(XIO *io, int flag);

@@ -1,32 +1,47 @@
 #include "rand.h"
-#include "cross-platform/string.h"
 #include "gmssl/rand.h"
 #include "gmssl/sdf.h"
+#include "utils/string.h"
+
+#ifndef _WIN32
+int _rdrand64_step(unsigned long long *__p) __weak;
+int _rdseed64_step(unsigned long long *__p) __weak;
+int _rdrand64_step(unsigned long long *__p)
+{
+    LOG_ERROR("rdrand not supported");
+    return 0;
+}
+int _rdseed64_step(unsigned long long *__p)
+{
+    LOG_ERROR("rdseed not supported");
+    return 0;
+}
+#endif
 
 typedef int (*rand_func)(uint8_t *buf, size_t buflen);
 
 RESULT cc_random_bytes(const char *source, XIO *out, size_t len)
 {
     rand_func fn = NULL;
-    if (source == NULL || strcmp(source, "soft") == 0)
+    if (source == NULL || STREQ_NoCase(source, "soft"))
     {
         fn = rand_bytes;
     }
-    else if (strcmp(source, "rdrand") == 0)
+    else if (STREQ_NoCase(source, "rdrand"))
     {
         fn = rdrand_bytes;
     }
-    else if (strcmp(source, "rdseed") == 0)
+    else if (STREQ_NoCase(source, "rdseed"))
     {
         fn = rdseed_bytes;
     }
-    else if (strncasecmp(source, "sdf:", 4) == 0)
+    else if (STREQ_NoCaseN(source, "sdf:", 4))
     {
         return cc_random_bytes_sdf(source + 4, out, len);
     }
     else
     {
-        LOG_ERR("Unknown random source: %s", source);
+        LOG_ERROR("Unknown random source: %s", source);
         return RET_FAIL;
     }
 

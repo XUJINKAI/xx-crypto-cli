@@ -1,8 +1,20 @@
 # xx-crypto-cli
 
-Windows/Linux Crypto CLI Toolbox. 跨平台密码工具箱。
+> :warning: WIP: ONLY a few commands work. 开发中！
 
-:warning: WIP: ONLY a few commands work. 开发中！仅部分功能可用。
+Windows/Linux Crypto CLI Toolbox. 
+
+跨平台密码工具箱，基于GmSSL，支持国密，SDF接口。  
+功能：常见密码计算，常见数据格式转换，实用加密工具。  
+适用于密码计算和验证，以及日常加密使用。
+
+## Usage Demo
+
+- Generate random data from SDF lib
+`xx rand -n 10k --source sdf:lib.so --out rand.bin`
+
+- Randomness test
+`xx randcheck rand.bin`
 
 ## Build
 

@@ -1,8 +1,8 @@
 #include "cmdp.h"
 #include "cmdparser.h"
-#include "cross-platform/unistd.h"
 #include "global.h"
 #include "utils/console.h"
+#include "utils/unistd.h"
 #include <signal.h>
 
 // global
@@ -56,7 +56,7 @@ int xx_main(int argc, char *argv[], FILE *in_stream, FILE *out_stream, FILE *log
 #endif
 
     int r = run_command(argc - 1, argv + 1);
-    if (g_state.repl_mode || argc == 1)
+    if (g_state.repl_mode)
     {
         repl();
     }

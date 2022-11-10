@@ -27,7 +27,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     if (params->argc != 0)
     {
-        LOG_ERR("Invalid argument count");
+        LOG_ERROR("Invalid argument count");
         return CMDP_ACT_ERROR;
     }
     SM2_KEY key;

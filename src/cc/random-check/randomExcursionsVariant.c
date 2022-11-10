@@ -46,7 +46,7 @@ int RandomExcursionsVariant(int n, BitSequence *epsilon)
             for (i = 0; i < n; i++)
                 if (S_k[i] == x)
                     count++;
-            p_value = nist_erfc(fabs(count - J) / (sqrt(2.0 * J * (4.0 * fabs(x) - 2))));
+            p_value = nist_erfc(fabs((double)(count - J)) / (sqrt(2.0 * J * (4.0 * fabs((double)x) - 2))));
 
             if (isNegative(p_value) || isGreaterThanOne(p_value))
             {

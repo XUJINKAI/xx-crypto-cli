@@ -3,7 +3,7 @@
 #include "cmdparser.h"
 #include "global.h"
 
-#define IS_HASH_CALL(name) (STREQ(name, "hash") || STREQ(name, "h"))
+#define IS_HASH_CALL(name) (STREQ_NoCase(name, "hash") || STREQ_NoCase(name, "h"))
 
 static cmdp_action_t __process(cmdp_process_param_st *params);
 static cmdp_flag_t __algr_flag(cmdp_flag_param_st *params)
@@ -72,7 +72,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     digest = digest_from_name(args.algr);
     if (digest == NULL)
     {
-        LOG_ERR("Invalid algorithm: %s", args.algr);
+        LOG_ERROR("Invalid algorithm: %s", args.algr);
         goto end;
     }
 

@@ -22,7 +22,7 @@ int BinaryDerivate(int k, int n, BitSequence *epsilon, int epsilon_l)
         Sn_k += (2 * (int)epsilon[i]) - 1;
     }
 
-    V = fabs(Sn_k) / sqrt(n_k);
+    V = fabs((double)Sn_k) / sqrt(n_k);
 
     p_value = nist_erfc(fabs(V) / sqrt2);
 

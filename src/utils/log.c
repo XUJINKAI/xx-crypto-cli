@@ -49,23 +49,17 @@ void _log_write_fmt(const char *fmt, ...)
     va_end(args);
 }
 
-void _log_write_color(const char *color)
+void _log_write_color(tty_color color)
 {
     CHECK_LOG_STREAM();
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(color, log_stream);
-    }
+    tty_put_color(log_stream, color);
 }
 
-void _log_fmt_content(_LOG_TYPE type, int flag, const char *color, const char *fmt, ...)
+void _log_fmt_content(_LOG_TYPE type, int flag, tty_color color, const char *fmt, ...)
 {
     CHECK_LOG_STREAM();
     CHECK_LOG_LEVEL(type);
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(color, log_stream);
-    }
+    tty_put_color(log_stream, color);
     if (HAS_FLAG(flag, _LOGF_PROG))
     {
         fprintf(log_stream, "%s: ", "xx");
@@ -74,21 +68,15 @@ void _log_fmt_content(_LOG_TYPE type, int flag, const char *color, const char *f
     va_start(args, fmt);
     vfprintf(log_stream, fmt, args);
     va_end(args);
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(TC_RESET, log_stream);
-    }
+    tty_put_color(log_stream, TC_RESET);
     fprintf(log_stream, "\n");
 }
 
-void _log_hex_content(_LOG_TYPE type, int flag, const char *color, const char *title, const void *ptr, size_t len)
+void _log_hex_content(_LOG_TYPE type, int flag, tty_color color, const char *title, const void *ptr, size_t len)
 {
     CHECK_LOG_STREAM();
     CHECK_LOG_LEVEL(type);
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(color, log_stream);
-    }
+    tty_put_color(log_stream, color);
     if (HAS_FLAG(flag, _LOGF_PROG))
     {
         fprintf(log_stream, "%s: ", "xx");
@@ -99,30 +87,21 @@ void _log_hex_content(_LOG_TYPE type, int flag, const char *color, const char *t
     {
         fprintf(log_stream, "%02X", p[i]);
     }
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(TC_RESET, log_stream);
-    }
+    tty_put_color(log_stream, TC_RESET);
     fprintf(log_stream, "\n");
 }
 
-void _log_xio_content(_LOG_TYPE type, int flag, const char *color, const char *title, XIO *xio)
+void _log_xio_content(_LOG_TYPE type, int flag, tty_color color, const char *title, XIO *xio)
 {
     CHECK_LOG_STREAM();
     CHECK_LOG_LEVEL(type);
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(color, log_stream);
-    }
+    tty_put_color(log_stream, color);
     if (HAS_FLAG(flag, _LOGF_PROG))
     {
         fprintf(log_stream, "%s: ", "xx");
     }
     fprintf(log_stream, "%s", title);
     XIO_dump_chain(xio, log_stream);
-    if (color != NULL && isatty(fileno(log_stream)))
-    {
-        fputs(TC_RESET, log_stream);
-    }
+    tty_put_color(log_stream, TC_RESET);
     fprintf(log_stream, "\n");
 }

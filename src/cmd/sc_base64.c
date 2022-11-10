@@ -36,7 +36,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
     if (params->argc > 1)
     {
-        LOG_ERR("too many arguments");
+        LOG_ERROR("too many arguments");
         return CMDP_ACT_ERROR;
     }
     XIO *instream  = NULL;

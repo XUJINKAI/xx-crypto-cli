@@ -1,5 +1,18 @@
 #include "cmd_helper.h"
-#include "cross-platform/string.h"
+#include "utils/string.h"
+
+#define XX(name) #name,
+static const char *format_strings[] = {FORMAT_TYPE_MAP(XX)};
+#undef XX
+
+const char *format_to_string(FORMAT_t format)
+{
+    if (format <= 0 || format > sizeof(format_strings) / sizeof(format_strings[0]))
+    {
+        return "unknown";
+    }
+    return format_strings[format - 1];
+}
 
 FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt)
 {
@@ -7,15 +20,15 @@ FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt)
     {
         return def_fmt;
     }
-    else if (strcasecmp(format, "bin") == 0)
+    else if (STREQ_NoCase(format, "bin"))
     {
         return FORMAT_BIN;
     }
-    else if (strcasecmp(format, "hex") == 0)
+    else if (STREQ_NoCase(format, "hex"))
     {
         return FORMAT_HEX;
     }
-    else if (strcasecmp(format, "base64") == 0)
+    else if (STREQ_NoCase(format, "base64"))
     {
         return FORMAT_BASE64;
     }
@@ -48,7 +61,7 @@ XIO *cmd_get_instream(char *text, char *filename, bool __stdin)
         r = XIO_new_file(filename, "rb");
         if (r == NULL)
         {
-            LOG_ERR("Can't open file: %s", filename);
+            LOG_ERROR("Can't open file: %s", filename);
         }
     }
     else if (__stdin)
@@ -66,7 +79,7 @@ XIO *cmd_get_outstream(char *filename, bool __stdout)
         r = XIO_new_file(filename, "wb");
         if (r == NULL)
         {
-            LOG_ERR("Can't open file: %s", filename);
+            LOG_ERROR("Can't open file: %s", filename);
         }
     }
     else if (__stdout)
