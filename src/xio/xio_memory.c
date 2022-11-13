@@ -5,12 +5,14 @@
 typedef struct XIO_memory_st
 {
     XIO base;
+    bool read_only;
     uint8_t *buffer;
     size_t size;
+    size_t capacity;
     uint8_t *ptr;
 } XIO_memory;
 
-static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
+static size_t f_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
     XIO_memory *io    = (XIO_memory *)__io;
     size_t remain_len = io->size - (io->ptr - io->buffer);
@@ -20,16 +22,16 @@ static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
     io->base.num_read += len;
     return len;
 }
-static size_t _write_(XIO *__io, const uint8_t *__ptr, size_t __len)
+static size_t f_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
     LOG_ERROR("XIO_memory is read-only");
     return 0;
 }
-static void _flush_(XIO *__io)
+static void f_flush(XIO *__io)
 {
     (void)__io;
 }
-static void _close_(XIO *__io)
+static void f_close(XIO *__io)
 {
     XIO_memory *io = (XIO_memory *)__io;
     if (HAS_FLAG(io->base.flags, XIO_FLAG_CLOSE))
@@ -38,7 +40,7 @@ static void _close_(XIO *__io)
     }
     free(io);
 }
-static void _dump(XIO *__io, FILE *fp)
+static void f_dump(XIO *__io, FILE *fp)
 {
     XIO_memory *io = (XIO_memory *)__io;
     fprintf(fp, "XIO_MEMORY(size=%zu)", io->size);
@@ -51,11 +53,11 @@ XIO *XIO_new_memory(const void *data, size_t datalen, bool close_free)
     *io = (XIO_memory){
         .base =
             {
-                .read  = _read_,
-                .write = _write_,
-                .flush = _flush_,
-                .close = _close_,
-                .dump  = _dump,
+                .read  = f_read,
+                .write = f_write,
+                .flush = f_flush,
+                .close = f_close,
+                .dump  = f_dump,
                 .type  = XIO_TYPE_MEMORY,
                 .flags = close_free ? XIO_FLAG_CLOSE : 0,
             },

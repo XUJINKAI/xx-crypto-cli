@@ -10,6 +10,8 @@
 #define _DEBUG
 #endif
 
+#define STACK_BUFFER_SIZE 4096
+
 #define HAS_FLAG(a, b) (((a) & (b)) == (b))
 #define XOR(a, b)      ((a) && !(b)) || (!(a) && (b))
 
@@ -23,6 +25,8 @@ typedef struct
 {
     FILE *in;
     FILE *out;
+    bool uppercase;
+#define G_HEX_FMT (g_state.uppercase ? "%02X" : "%02x")
     bool no_color;
     bool repl_mode;
     bool sigint_no_exit;

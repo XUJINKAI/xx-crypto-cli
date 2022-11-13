@@ -1,6 +1,6 @@
-#include "cc/hex.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
+#include "data/hex.h"
 #include "global.h"
 #include "gmssl/hex.h"
 #include "gmssl/pbkdf2.h"
@@ -8,7 +8,6 @@
 #include "gmssl/sm4.h"
 #include "utils/console.h"
 #include <ctype.h> // isxdigit
-
 
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
@@ -122,7 +121,6 @@ static void chat_session_start(struct chat_session_st *session)
         free(line);
     }
 }
-
 
 static void SM2_point_mul_bytes(SM2_POINT Point, uint8_t private_key_bytes[32], uint8_t result_bytes[64])
 {

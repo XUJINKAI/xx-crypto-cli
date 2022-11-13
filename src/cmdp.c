@@ -20,7 +20,10 @@ int run_command(int argc, char *argv[])
     ctx.fn_error_parse  = ctx_error_parse;
     // TODO 对ctx添加解析后果的打印
 
-    int r = cmdp_run(argc, argv, &main_cmdp, &ctx);
+    int64_t t = time_ns();
+    int r     = cmdp_run(argc, argv, &main_cmdp, &ctx);
+    t         = time_ns() - t;
+    LOG_DBG("time: %ld.%ld ms", t / 1000000, t % 1000000);
     LOG_DBG("exit code: %d", r);
     return r;
 }

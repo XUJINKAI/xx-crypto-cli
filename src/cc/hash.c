@@ -39,7 +39,7 @@ RESULT cc_hash_ex(const DIGEST *digest, XIO *in, XIO *out, size_t bufsize)
 {
     if (bufsize == 0)
     {
-        bufsize = 10 * 1024 * 1024;
+        return cc_hash(digest, in, out);
     }
 
     DIGEST_CTX ctx;

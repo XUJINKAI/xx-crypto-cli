@@ -2,14 +2,14 @@
 #include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
-#include "utils/convert.h"
+#include "utils/converter.h"
 
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
     char *size_str;
-    char *source;
+    char *engine;
     char *outfile;
     bool out_fmt_hex;
     bool noout;
@@ -24,7 +24,7 @@ cmdp_command_st sc_rand = {
     .options =
         (cmdp_option_st[]){
             {'n', NULL, "Number of bytes", CMDP_TYPE_STRING_PTR, &rand_args.size_str, "<SIZE>"},
-            {'S', "source", "Source of generator", CMDP_TYPE_STRING_PTR, &rand_args.source, "<SOURCE>"},
+            {'E', "engine", "Source of generator", CMDP_TYPE_STRING_PTR, &rand_args.engine, "<ENGINE>"},
             {0, "hex", "Output hex format", CMDP_TYPE_BOOL, &rand_args.out_fmt_hex},
             _opt_outfile(rand_args.outfile, ),
             {0, "noout", "Do not output the random bytes", CMDP_TYPE_BOOL, &rand_args.noout},
@@ -33,7 +33,7 @@ cmdp_command_st sc_rand = {
         },
     .doc_tail = "\n"
                 "SIZE: 10, 0xFF, 1k, 1m, 1g, etc.\n"
-                "SOURCE: soft(default), rdrand, rdseed, sdf:LIB.so\n",
+                "ENGINE: soft(default), rdrand, rdseed, sdf:LIB.so\n",
     .fn_process = __process,
 };
 
@@ -47,11 +47,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     XIO *outstream = NULL;
 
     long len;
-    if (string_to_long_ex(rand_args.size_str, &len) != RET_OK)
-    {
-        goto end;
-    }
-    if (len < 0)
+    if (RET_OK != string_to_long(rand_args.size_str, &len, CONV_SIZE))
     {
         LOG_ERROR("Invalid length: %ld", len);
         goto end;
@@ -70,7 +66,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         outstream = XIO_new_null();
     }
 
-    ret = cc_random_bytes(rand_args.source, outstream, len);
+    ret = cc_random_bytes(rand_args.engine, outstream, len);
 
 end:
     XIO_CLOSE_SAFE(outstream);

@@ -11,6 +11,16 @@ option(ENABLE_BROKEN_CRYPTO "Enable broken crypto" ON)
 option(ENABLE_RDRND "Enable Intel RDRND instructions" ON)
 add_subdirectory(GmSSL EXCLUDE_FROM_ALL)
 
+execute_process(
+    COMMAND git describe --tags --long --dirty=-modified --always
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_definitions(-DGIT_TAG="${GIT_TAG}")
+message(STATUS "GIT_TAG: ${GIT_TAG}")
+
+
 include_directories(
     GmSSL/include
     cmdparser
@@ -21,7 +31,7 @@ file(GLOB_RECURSE src
     "src/*.c"
     "cmdparser/cmdparser.c"
 )
-
+list(REMOVE_ITEM src ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
@@ -32,21 +42,32 @@ if(UNIX)
   # add_compile_options(-Wno-missing-field-initializers -Wno-newline-eof -Wno-sometimes-uninitialized)
 endif()
 
-add_executable(xx ${src})
-target_link_libraries(xx gmssl)
+add_library(xxlib ${src})
+
+add_executable(xx src/main.c)
+target_link_libraries(xx xxlib gmssl)
 if(UNIX)
-  target_link_libraries(xx m)
+    target_link_libraries(xx m)
 endif()
+
 
 if(UNIX)
     INSTALL(TARGETS xx RUNTIME DESTINATION bin)
 endif()
 
-execute_process(
-    COMMAND git describe --tags --long --dirty=-modified --always
-    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-    OUTPUT_VARIABLE GIT_TAG
-    OUTPUT_STRIP_TRAILING_WHITESPACE
+
+file(GLOB_RECURSE test_src
+    "test/*.c"
 )
-add_definitions(-DGIT_TAG="${GIT_TAG}")
-message(STATUS "GIT_TAG: ${GIT_TAG}")
+add_executable(xxtest EXCLUDE_FROM_ALL ${test_src})
+target_link_libraries(xxtest xxlib gmssl)
+if(UNIX)
+    target_link_libraries(xxtest m)
+endif()
+
+add_custom_target(test COMMAND xxtest)
+add_custom_target(test-valgrind
+    COMMAND valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes
+                    --trace-children=yes --error-exitcode=1
+                    $<TARGET_FILE:xxtest>
+)

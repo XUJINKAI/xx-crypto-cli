@@ -62,10 +62,3 @@ int xx_main(int argc, char *argv[], FILE *in_stream, FILE *out_stream, FILE *log
     }
     return r;
 }
-
-#ifndef XX_NO_MAIN
-int main(int argc, char *argv[])
-{
-    return xx_main(argc, argv, stdin, stdout, stderr);
-}
-#endif

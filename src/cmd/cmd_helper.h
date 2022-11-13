@@ -7,7 +7,9 @@
 #define FORMAT_TYPE_MAP(XX)                                                                                            \
     XX(BIN)                                                                                                            \
     XX(HEX)                                                                                                            \
-    XX(BASE64)
+    XX(BASE64)                                                                                                         \
+    XX(CSTR)                                                                                                           \
+    XX(CBYTES)
 
 #define XX(name) FORMAT_##name,
 typedef enum
@@ -18,18 +20,19 @@ typedef enum
 #undef XX
 
 const char *format_to_string(FORMAT_t format);
+FORMAT_t format_from_string(const char *format);
+
 FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt);
 XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format);
 XIO *cmd_get_instream(char *text, char *filename, bool __stdin);
 XIO *cmd_get_outstream(char *filename, bool __stdout);
-
 
 #define CMDP_GET_ARG(params, index)   (params->argc > index ? params->argv[index] : NULL)
 #define RESULT_TO_CMDP_ACTION(result) (result == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR)
 
 #define _opt_intext(opt, more)                                                                                         \
     {                                                                                                                  \
-        'T', "text", "Input Text", CMDP_TYPE_STRING_PTR, &opt, "<TEXT>", more                                          \
+        's', "string", "Input String", CMDP_TYPE_STRING_PTR, &opt, "<STRING>", more                                    \
     }
 #define _opt_infile(opt, more)                                                                                         \
     {                                                                                                                  \

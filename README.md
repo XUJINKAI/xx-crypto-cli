@@ -11,7 +11,7 @@ Windows/Linux Crypto CLI Toolbox.
 ## Usage Demo
 
 - Generate random data from SDF lib  
-`xx rand -n 10k --source sdf:lib.so --out rand.bin`
+`xx rand -n 10k --engine sdf:lib.so --out rand.bin`
 
 - Randomness test  
 `xx randcheck rand.bin`
@@ -27,6 +27,8 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
+make test
+make test-valgrind
 make install
 ```
 

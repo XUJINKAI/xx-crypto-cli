@@ -2,6 +2,7 @@
 #include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
+#include "utils/converter.h"
 
 #define IS_HASH_CALL(name) (STREQ_NoCase(name, "hash") || STREQ_NoCase(name, "h"))
 
@@ -19,9 +20,10 @@ static struct
 {
     char *algr;
     char *intext;
+    char *infile;
     char *informat;
     char *outformat;
-    int bufsize;
+    char *bufsize;
 } args;
 
 cmdp_command_st sc_hash = {
@@ -31,9 +33,10 @@ cmdp_command_st sc_hash = {
     .options =
         (cmdp_option_st[]){
             _opt_intext(args.intext, ),
+            _opt_infile(args.infile, ),
             _opt_informat(args.informat, ),
             _opt_outformat(args.outformat, ),
-            {0, "bufsize", "Update buffer size", CMDP_TYPE_INT4, &args.bufsize},
+            {0, "bufsize", "Update buffer size", CMDP_TYPE_STRING_PTR, &args.bufsize, "<size>"},
             {0, "algr", "Hash algorithm", CMDP_TYPE_STRING_PTR, &args.algr, "<ALGR>", .fn_flag = __algr_flag},
             CMDP_OPT_DOC("ALGR: sm3(default), md5, sha1, sha224, sha256, sha384, \n"
                          "    sha512, sha512-224, sha512-256\n"
@@ -84,7 +87,14 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         goto end;
     }
 
-    ret = cc_hash_ex(digest, instream, outstream, args.bufsize);
+    long bufsize = 0;
+    if (RET_OK != string_to_long(args.bufsize, &bufsize, CONV_NULL_OK | CONV_SIZE))
+    {
+        LOG_ERROR("Invalid buffer size: %s", args.bufsize);
+        goto end;
+    }
+
+    ret = cc_hash_ex(digest, instream, outstream, bufsize);
 
 end:
     XIO_CLOSE_SAFE(instream);

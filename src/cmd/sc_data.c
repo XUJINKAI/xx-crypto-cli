@@ -6,37 +6,45 @@ static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
-    char *informat;
+    char *instring;
     char *infile;
-    char *outformat;
+    char *informat;
     char *outfile;
+    char *outformat;
 } args;
 
 cmdp_command_st sc_data = {
     .name = "data",
-    .desc = "Data process",
-    .doc  = "print [OPTIONS] <TEXT>\n",
+    .desc = "Data encoder",
+    .doc  = "Usage: data [OPTIONS]\n",
     .options =
         (cmdp_option_st[]){
-            {'I', "in-format", "Input Format", CMDP_TYPE_STRING_PTR, &args.informat, "<FORMAT>"},
-            {'O', "out-format", "Output Format", CMDP_TYPE_STRING_PTR, &args.outformat, "<FORMAT>"},
-            {'i', "infile", "Input File", CMDP_TYPE_STRING_PTR, &args.infile, "<filepath>"},
-            {'o', "outfile", "Output File", CMDP_TYPE_STRING_PTR, &args.outfile, "<filepath>"},
+            _opt_intext(args.instring, ),
+            _opt_infile(args.infile, ),
+            _opt_informat(args.informat, ),
+            _opt_outfile(args.outfile, ),
+            _opt_outformat(args.outformat, ),
             {0},
         },
     .fn_process = __process,
 };
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
-    LOG_VERBOSE("isatty(stdin) : %d", isatty(0));
-    LOG_VERBOSE("isatty(stdout): %d", isatty(1));
+    CMDP_CHECK_ARG_COUNT(params, 0, 0);
 
-    XIO *instream  = cmd_get_instream(CMDP_GET_ARG(params, 0), args.infile, true);
-    XIO *outstream = cmd_get_outstream(args.outfile, true);
+    XIO *instream       = cmd_get_instream(args.instring, args.infile, true);
+    XIO *outstream      = cmd_get_outstream(args.outfile, true);
+    FORMAT_t in_format  = cmd_get_format(args.informat, FORMAT_CSTR);
+    FORMAT_t out_format = cmd_get_format(args.outformat, FORMAT_BIN);
+    instream            = cmd_wrap_stream(instream, in_format);
+    outstream           = cmd_wrap_stream(outstream, out_format);
+    LOG_VERBOSE("in_format=%s", format_to_string(in_format));
+    LOG_VERBOSE("out_format=%s", format_to_string(out_format));
+
     XIO_drain(instream, outstream);
-    XIO_close(instream);
-    XIO_close(outstream);
+
+    XIO_CLOSE_SAFE(instream);
+    XIO_CLOSE_SAFE(outstream);
     return RESULT_TO_CMDP_ACTION(RET_OK);
 }

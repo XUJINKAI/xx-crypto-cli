@@ -27,7 +27,6 @@ cmdp_command_st sc_base64 = {
     .alias_name = "b",
 };
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     if (params->argc == 0 && params->opts == 0)

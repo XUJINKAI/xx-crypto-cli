@@ -7,7 +7,7 @@ typedef struct
     XIO base;
 } XIO_HEX;
 
-static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
+static size_t f_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
     XIO_HEX *io      = (XIO_HEX *)__io;
     uint8_t *hex_buf = (uint8_t *)calloc(1, __maxlen * 2);
@@ -29,22 +29,22 @@ static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
     io->base.num_read += bytes_len;
     return bytes_len;
 }
-static size_t _write_(XIO *__io, const uint8_t *__ptr, size_t __len)
+static size_t f_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
     XIO_HEX *io = (XIO_HEX *)__io;
     size_t i    = 0;
     for (; i < __len; i++)
     {
-        XIO_printf(io->base.target, "%02X", __ptr[i]);
+        XIO_printf(io->base.target, G_HEX_FMT, __ptr[i]);
     }
     io->base.num_write += __len;
     return i;
 }
-static void _flush_(XIO *__io)
+static void f_flush(XIO *__io)
 {
     XIO_HEX *io = (XIO_HEX *)__io;
 }
-static void _close_(XIO *__io)
+static void f_close(XIO *__io)
 {
     XIO_HEX *io = (XIO_HEX *)__io;
     if (HAS_FLAG(io->base.flags, XIO_FLAG_CLOSE))
@@ -53,7 +53,7 @@ static void _close_(XIO *__io)
     }
     free(io);
 }
-static void _dump(XIO *__io, FILE *fp)
+static void f_dump(XIO *__io, FILE *fp)
 {
     XIO_HEX *io = (XIO_HEX *)__io;
     fprintf(fp, "XIO_HEX");
@@ -66,11 +66,11 @@ XIO *XIO_newf_hex(XIO *io)
     *r = (XIO_HEX){
         .base =
             {
-                .read   = _read_,
-                .write  = _write_,
-                .flush  = _flush_,
-                .close  = _close_,
-                .dump   = _dump,
+                .read   = f_read,
+                .write  = f_write,
+                .flush  = f_flush,
+                .close  = f_close,
+                .dump   = f_dump,
                 .type   = XIO_TYPE_HEX,
                 .flags  = XIO_FLAG_CLOSE,
                 .target = io,

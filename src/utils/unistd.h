@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #if defined(__linux__)
 #include <unistd.h>
 #endif
@@ -15,6 +17,7 @@
 #endif
 
 void sleep_ms(int milliseconds);
+int64_t time_ns(void);
 
 #if defined(__unix__)
 #define __packed           __attribute__((packed))

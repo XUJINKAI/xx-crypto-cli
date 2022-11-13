@@ -14,25 +14,35 @@ const char *format_to_string(FORMAT_t format)
     return format_strings[format - 1];
 }
 
+FORMAT_t format_from_string(const char *format)
+{
+    if (format == NULL)
+    {
+        return FORMAT_NONE;
+    }
+    for (int i = 0; i < sizeof(format_strings) / sizeof(format_strings[0]); i++)
+    {
+        if (STREQ_NoCase(format, format_strings[i]))
+        {
+            return i + 1;
+        }
+    }
+    return FORMAT_NONE;
+}
+
 FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt)
 {
     if (format == NULL)
     {
         return def_fmt;
     }
-    else if (STREQ_NoCase(format, "bin"))
+    FORMAT_t fmt = format_from_string(format);
+    if (fmt == FORMAT_NONE)
     {
-        return FORMAT_BIN;
+        LOG_ERROR("Invalid format: %s", format);
+        return def_fmt;
     }
-    else if (STREQ_NoCase(format, "hex"))
-    {
-        return FORMAT_HEX;
-    }
-    else if (STREQ_NoCase(format, "base64"))
-    {
-        return FORMAT_BASE64;
-    }
-    return def_fmt;
+    return fmt;
 }
 
 XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format)
@@ -66,7 +76,7 @@ XIO *cmd_get_instream(char *text, char *filename, bool __stdin)
     }
     else if (__stdin)
     {
-        r = XIO_new_fp(stdin, false);
+        r = XIO_new_fp(g_state.in, false);
     }
     return r;
 }
@@ -84,7 +94,7 @@ XIO *cmd_get_outstream(char *filename, bool __stdout)
     }
     else if (__stdout)
     {
-        r = XIO_new_fp(stdout, false);
+        r = XIO_new_fp(g_state.out, false);
     }
     return r;
 }

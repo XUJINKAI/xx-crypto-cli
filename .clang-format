@@ -11,7 +11,7 @@ BasedOnStyle: Microsoft
 IndentWidth: 4
 IndentCaseLabels: true
 
-MaxEmptyLinesToKeep: 2
+MaxEmptyLinesToKeep: 1
 
 BreakStringLiterals: false
 ReflowComments: false

@@ -54,7 +54,7 @@ void XIO_close(XIO *io)
     XIO_flush(io);
     io->close(io);
 }
-static void _dump_xio(XIO *io, FILE *fp)
+static void f_dump_xio(XIO *io, FILE *fp)
 {
     if (io->dump)
     {
@@ -74,13 +74,12 @@ void XIO_dump_chain(XIO *io, FILE *fp)
     }
     while (io->target != NULL)
     {
-        _dump_xio(io, fp);
+        f_dump_xio(io, fp);
         fprintf(fp, " === ");
         io = io->target;
     }
-    _dump_xio(io, fp);
+    f_dump_xio(io, fp);
 }
-
 
 void XIO_drain(XIO *in, XIO *out)
 {

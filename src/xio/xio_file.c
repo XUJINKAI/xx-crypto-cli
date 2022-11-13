@@ -8,14 +8,14 @@ typedef struct XIO_FILE_st
     FILE *fp;
 } XIO_FILE;
 
-static size_t _read_(XIO *__io, uint8_t *__ptr, size_t __maxlen)
+static size_t f_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
     size_t len   = fread(__ptr, 1, __maxlen, io->fp);
     io->base.num_read += len;
     return len;
 }
-static size_t _write_(XIO *__io, const uint8_t *__ptr, size_t __len)
+static size_t f_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
     size_t len   = fwrite(__ptr, 1, __len, io->fp);
@@ -32,17 +32,17 @@ static int64_t _tell_(XIO *__io)
     XIO_FILE *io = (XIO_FILE *)__io;
     return ftell(io->fp);
 }
-static void _flush_(XIO *__io)
+static void f_flush(XIO *__io)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
     if (HAS_FLAG(io->base.flags, XIO_FLAG_FILE_TTY_FLUSH_EOL) && isatty(fileno(io->fp)))
     {
         const char *eol = "\n";
-        _write_(__io, (const uint8_t *)eol, strlen(eol));
+        f_write(__io, (const uint8_t *)eol, strlen(eol));
     }
     fflush(io->fp);
 }
-static void _close_(XIO *__io)
+static void f_close(XIO *__io)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
     if (HAS_FLAG(io->base.flags, XIO_FLAG_CLOSE))
@@ -51,7 +51,7 @@ static void _close_(XIO *__io)
     }
     free(io);
 }
-static void _dump(XIO *__io, FILE *fp)
+static void f_dump(XIO *__io, FILE *fp)
 {
     XIO_FILE *io = (XIO_FILE *)__io;
     fprintf(fp, "XIO_FILE(fileno=%d)", fileno(io->fp));
@@ -63,13 +63,13 @@ XIO *XIO_new_fp(FILE *fp, bool close_free)
     *io          = (XIO_FILE){
         .base =
             {
-                .read  = _read_,
-                .write = _write_,
-                .flush = _flush_,
+                .read  = f_read,
+                .write = f_write,
+                .flush = f_flush,
                 .seek  = _seek_,
                 .tell  = _tell_,
-                .close = _close_,
-                .dump  = _dump,
+                .close = f_close,
+                .dump  = f_dump,
                 .type  = XIO_TYPE_FILE,
                 .flags = (close_free ? XIO_FLAG_CLOSE : 0) | XIO_FLAG_FILE_TTY_FLUSH_EOL,
             },
