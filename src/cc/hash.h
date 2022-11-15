@@ -5,5 +5,4 @@
 #include "xio/xio.h"
 
 RESULT cc_hash_sm3(XIO *in, XIO *out);
-RESULT cc_hash(const DIGEST *digest, XIO *in, XIO *out);
-RESULT cc_hash_ex(const DIGEST *digest, XIO *in, XIO *out, size_t bufsize);
+RESULT cc_hash(const DIGEST *digest, XIO *in, XIO *out, size_t bufsize);
