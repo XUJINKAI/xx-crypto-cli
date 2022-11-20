@@ -88,5 +88,5 @@ RESULT cc_sm4_cbc_decrypt(CC_SM4_PARAM *param, XIO *in, XIO *out)
 end:
     clear_buffer(inbuf, sizeof(inbuf));
     clear_buffer(outbuf, sizeof(outbuf));
-    return RET_OK;
+    return ret;
 }

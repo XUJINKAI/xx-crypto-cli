@@ -128,7 +128,7 @@ static void cbytes_encode_buf(uint8_t *__buf, size_t __size, XIO *instream, XIO 
         for (int i = 1; i < read_len; i++)
         {
             p = __buf + i;
-            sprintf(byte_buf + 4, G_HEX_FMT, *p);
+            sprintf((char *)byte_buf + 4, G_HEX_FMT, *p);
             XIO_write(outstream, byte_buf, 6);
         }
     }

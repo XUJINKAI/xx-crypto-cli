@@ -23,6 +23,12 @@ int run_command(int argc, char *argv[])
     int64_t t = time_ns();
     int r     = cmdp_run(argc, argv, &main_cmdp, &ctx);
     t         = time_ns() - t;
+    if (!g_state.no_eol && XIO_get_last_char(g_state.out, true) != '\n')
+    {
+        XIO_printf(g_state.out, "\n");
+        XIO_flush(g_state.out);
+    }
+
     LOG_DBG("time: %ld.%ld ms", t / 1000000, t % 1000000);
     LOG_DBG("exit code: %d", r);
     return r;

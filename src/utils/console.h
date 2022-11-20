@@ -13,5 +13,5 @@
 #define CP_GBK 936
 #endif
 
-char *console_readline(tty_color color, const char *prompt);
+char *console_readline(const char *color, const char *prompt);
 int commandline_to_args(const char *cmd, int *retArgc, char ***retArgv);

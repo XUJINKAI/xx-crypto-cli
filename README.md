@@ -16,6 +16,9 @@ Windows/Linux Crypto CLI Toolbox.
 - Randomness test  
 `xx randcheck rand.bin`
 
+- Generate SM2 key  
+`xx sm2 keygen [--sk <PrivateKeyHex>] [--pem]`
+
 ## Build
 
 Run `git submodule update --init` to fetch the submodules.

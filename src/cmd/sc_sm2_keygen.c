@@ -1,23 +1,31 @@
+#include "cc/sm2.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
+#include "data/hex.h"
 #include "global.h"
-#include "gmssl/sm2.h"
-
 
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
-    bool raw;
+    char *sk;
+    bool unzip;
+    bool zip;
     bool pem;
+    char *outfile;
 } args;
 
 cmdp_command_st sc_sm2_keygen = {
     .name = "keygen",
     .desc = "SM2 Key Generator",
-    .doc  = "sm2 keygen [OPTIONS]\n",
+    .doc  = "Usage: sm2 keygen [OPTIONS]\n",
     .options =
         (cmdp_option_st[]){
+            {0, "sk", "Specify the private key", CMDP_TYPE_STRING_PTR, &args.sk, "<HEX>"},
+            {0, "unzip", "Output uncompressed public key", CMDP_TYPE_BOOL, &args.unzip},
+            {0, "zip", "Output compressed public key", CMDP_TYPE_BOOL, &args.zip},
+            {0, "pem", "Output the key in PEM format", CMDP_TYPE_BOOL, &args.pem},
+            _opt_outfile(args.outfile, ),
             {0},
         },
     .fn_process = __process,
@@ -25,15 +33,48 @@ cmdp_command_st sc_sm2_keygen = {
 
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
-    if (params->argc != 0)
-    {
-        LOG_ERROR("Invalid argument count");
-        return CMDP_ACT_ERROR;
-    }
-    SM2_KEY key;
-    sm2_key_generate(&key);
-    sm2_key_print(stdout, 0, 0, "", &key);
+    CMDP_CHECK_ARG_COUNT(params, 0, 0);
 
+    XIO *outstream = NULL;
+    outstream      = cmd_get_outstream(args.outfile, true);
+
+    SM2_KEY key;
+    if (args.sk)
+    {
+        uint8_t sk[32];
+        if (RET_OK != hex_str_expect_to_bytes(args.sk, 32, sk))
+        {
+            LOG_ERROR("Invalid sk (private key).");
+            goto end;
+        }
+        sm2_key_set_private_key(&key, sk);
+        clear_buffer(sk, 32);
+    }
+    else
+    {
+        sm2_key_generate(&key);
+    }
+
+    if (args.unzip + args.zip + args.pem == 0)
+    {
+        args.unzip = true;
+    }
+
+    if (args.unzip)
+    {
+        cc_sm2_key_print_uncompressed(outstream, &key);
+    }
+    if (args.zip)
+    {
+        cc_sm2_key_print_compresed(outstream, &key);
+    }
+    if (args.pem)
+    {
+        cc_sm2_public_key_print_pem(outstream, &key);
+        cc_sm2_private_key_print_pem(outstream, &key);
+    }
+
+end:
     clear_buffer(&key, sizeof(key));
     return CMDP_ACT_OK;
 }

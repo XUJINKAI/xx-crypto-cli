@@ -11,7 +11,6 @@
 
 #define MAXPLEN 384
 
-
 /*****************************************
 ** greater - Test if x > y               *
 **                                       *
@@ -41,7 +40,6 @@ int greater(BYTE *x, BYTE *y, int l)
 
     return 0;
 }
-
 
 /*****************************************
 ** less - Test if x < y                  *
@@ -76,7 +74,6 @@ int less(BYTE *x, BYTE *y, int l)
 
     return 0;
 }
-
 
 /*****************************************
 ** bshl - shifts array left              *
@@ -119,7 +116,6 @@ BYTE bshl(BYTE *x, int l)
     return (BYTE)c2;
 }
 
-
 /*****************************************
 ** bshr - shifts array right             *
 **                   by one bit.         *
@@ -157,7 +153,6 @@ void bshr(BYTE *x, int l)
         *p |= 0x80;
 }
 
-
 /*****************************************
 ** Mult - Multiply two integers          *
 **                                       *
@@ -176,10 +171,10 @@ void bshr(BYTE *x, int l)
 ******************************************/
 int Mult(BYTE *A, BYTE *B, int LB, BYTE *C, int LC)
 {
-    int i, j, k, LA;
+    int i, j, k;
     DIGIT result;
 
-    LA = LB + LC;
+    // int LA = LB + LC;
 
     for (i = LB - 1; i >= 0; i--)
     {
@@ -196,7 +191,6 @@ int Mult(BYTE *A, BYTE *B, int LB, BYTE *C, int LC)
     return 0;
 }
 
-
 void ModSqr(BYTE *A, BYTE *B, int LB, BYTE *M, int LM)
 {
 
@@ -209,7 +203,6 @@ void ModMult(BYTE *A, BYTE *B, int LB, BYTE *C, int LC, BYTE *M, int LM)
     Mult(A, B, LB, C, LC);
     Mod(A, (LB + LC), M, LM);
 }
-
 
 /*****************************************
 ** smult - Multiply array by a scalar.   *
@@ -329,7 +322,6 @@ void ModExp(BYTE *A, BYTE *B, int LB, BYTE *C, int LC, BYTE *M, int LM)
         }
     }
 }
-
 
 /* DivMod:
  *
@@ -467,7 +459,6 @@ int DivMod(BYTE *x, int lenx, BYTE *n, int lenn, BYTE *quot, BYTE *rem)
     return lenq;
 }
 
-
 /* 
  * Mod - Computes an integer modulo another integer
  *
@@ -507,7 +498,6 @@ void Div(BYTE *x, int lenx, BYTE *n, int lenn)
     }
 }
 
-
 /*****************************************
 ** sub - Subtract two integers           *
 **                                       *
@@ -536,7 +526,6 @@ void sub(BYTE *A, int LA, BYTE *B, int LB)
 
     FREE(tb);
 }
-
 
 /*****************************************
 ** negate - Negate an integer            *
@@ -571,7 +560,6 @@ int negate(BYTE *A, int L)
 
     return accum;
 }
-
 
 /*
  * add()
@@ -608,7 +596,6 @@ BYTE add(BYTE *A, int LA, BYTE *B, int LB)
 
     return (BYTE)accum;
 }
-
 
 void prettyprintBstr(char *S, BYTE *A, int L)
 {
@@ -663,7 +650,6 @@ void prettyprintBstr(char *S, BYTE *A, int L)
     }
     printf("\n\n");
 }
-
 
 /**********************************************************************/
 /*  Performs byte reverse for PC based implementation (little endian) */

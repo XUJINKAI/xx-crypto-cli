@@ -3,7 +3,6 @@
 #include "global.h"
 #include "utils/unistd.h"
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct

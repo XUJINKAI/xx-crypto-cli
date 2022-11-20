@@ -1,15 +1,5 @@
 #include "hex.h"
-#include "gmssl/hex.h"
 #include <stdlib.h>
-
-void XIO_HEX_write(XIO *io, const void *__ptr, size_t __len)
-{
-    uint8_t *p = (uint8_t *)__ptr;
-    for (size_t i = 0; i < __len; i++)
-    {
-        XIO_printf(io, "%02X", p[i]);
-    }
-}
 
 char *bytes_to_hex(const uint8_t *bytes, size_t len)
 {
@@ -18,27 +8,45 @@ char *bytes_to_hex(const uint8_t *bytes, size_t len)
     {
         return NULL;
     }
+    const char *fmt = G_HEX_FMT;
     for (size_t i = 0; i < len; i++)
     {
-        sprintf(hex + i * 2, "%02X", bytes[i]);
+        sprintf(hex + i * 2, fmt, bytes[i]);
     }
     hex[len * 2] = 0;
     return hex;
 }
 
-XX_MEM *hex_to_mem(const char *hex, size_t len)
+xbytes *hex_to_xbytes(const char *hex, size_t len)
 {
-    XX_MEM *mem = XX_MEM_new((len + 1) / 2);
+    xbytes *mem = xbytes_new((len + 1) / 2);
     if (!mem)
     {
         return NULL;
     }
     if (hex_to_bytes(hex, len, mem->ptr, &mem->len) != 1)
     {
-        XX_MEM_free(mem);
+        xbytes_free(mem);
         return NULL;
     }
     return mem;
+}
+
+RESULT hex_str_expect_to_bytes(const char *hex, size_t expectlen, uint8_t *bytes)
+{
+    xbytes *mem = hex_to_xbytes(hex, strlen(hex));
+    if (mem == NULL)
+    {
+        return RET_FAIL;
+    }
+    if (mem->len != expectlen)
+    {
+        xbytes_free(mem);
+        return RET_FAIL;
+    }
+    memcpy(bytes, mem->ptr, mem->len);
+    xbytes_free(mem);
+    return RET_OK;
 }
 
 void hexdump_encode(FILE *fp, void *__p, size_t __l)

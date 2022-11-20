@@ -30,7 +30,6 @@ int LinearComplexity(int M, int n, BitSequence *epsilon)
         return 0;
     }
 
-
     //	fprintf(stats[TEST_LINEARCOMPLEXITY], "-----------------------------------------------------\n");
     //	fprintf(stats[TEST_LINEARCOMPLEXITY], "\tL I N E A R  C O M P L E X I T Y\n");
     //	fprintf(stats[TEST_LINEARCOMPLEXITY], "-----------------------------------------------------\n");

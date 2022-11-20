@@ -77,8 +77,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream)
 }
 #endif
 
-
-char *console_readline(tty_color color, const char *prompt)
+char *console_readline(const char *color, const char *prompt)
 {
     tty_put_color(stdout, color);
     fprintf(stdout, "%s", prompt);

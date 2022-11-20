@@ -20,7 +20,7 @@ FORMAT_t format_from_string(const char *format)
     {
         return FORMAT_NONE;
     }
-    for (int i = 0; i < sizeof(format_strings) / sizeof(format_strings[0]); i++)
+    for (int i = 0; i < (int)(sizeof(format_strings) / sizeof(format_strings[0])); i++)
     {
         if (STREQ_NoCase(format, format_strings[i]))
         {
@@ -59,12 +59,12 @@ XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format)
     }
 }
 
-XIO *cmd_get_instream(char *text, char *filename, bool __stdin)
+XIO *cmd_get_instream(char *text, char *filename, bool g_in)
 {
     XIO *r = NULL;
     if (text)
     {
-        r = XIO_new_string(text, false);
+        r = XIO_new_string(text);
     }
     else if (filename)
     {
@@ -74,14 +74,14 @@ XIO *cmd_get_instream(char *text, char *filename, bool __stdin)
             LOG_ERROR("Can't open file: %s", filename);
         }
     }
-    else if (__stdin)
+    else if (g_in)
     {
-        r = XIO_new_fp(g_state.in, false);
+        r = XIO_newf_pass(g_state.in, 0);
     }
     return r;
 }
 
-XIO *cmd_get_outstream(char *filename, bool __stdout)
+XIO *cmd_get_outstream(char *filename, bool g_out)
 {
     XIO *r = NULL;
     if (filename)
@@ -92,9 +92,9 @@ XIO *cmd_get_outstream(char *filename, bool __stdout)
             LOG_ERROR("Can't open file: %s", filename);
         }
     }
-    else if (__stdout)
+    else if (g_out)
     {
-        r = XIO_new_fp(g_state.out, false);
+        r = XIO_newf_pass(g_state.out, 0);
     }
     return r;
 }

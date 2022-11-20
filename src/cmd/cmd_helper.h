@@ -24,8 +24,8 @@ FORMAT_t format_from_string(const char *format);
 
 FORMAT_t cmd_get_format(const char *format, FORMAT_t def_fmt);
 XIO *cmd_wrap_stream(XIO *xio, FORMAT_t format);
-XIO *cmd_get_instream(char *text, char *filename, bool __stdin);
-XIO *cmd_get_outstream(char *filename, bool __stdout);
+XIO *cmd_get_instream(char *text, char *filename, bool g_in);
+XIO *cmd_get_outstream(char *filename, bool g_out);
 
 #define CMDP_GET_ARG(params, index)   (params->argc > index ? params->argv[index] : NULL)
 #define RESULT_TO_CMDP_ACTION(result) (result == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR)

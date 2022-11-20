@@ -110,7 +110,6 @@ double cephes_igam(double a, double x)
     return ans * ax / a;
 }
 
-
 /* A[]: Stirling's formula expansion of log gamma
  * B[], C[]: log gamma function between 2 and 3
  */
@@ -125,7 +124,6 @@ static unsigned short C[] = {
     0x0043, 0x7195, 0x6286, 0xc131, 0xf34c, 0x892f, 0x5255, 0xc143, 0xe14a, 0x6a11, 0xce4b, 0xc13e};
 
 #define MAXLGM 2.556348e305
-
 
 /* Logarithm of gamma function */
 double cephes_lgam(double x)
@@ -302,7 +300,6 @@ double cephes_erfc(double x)
 
     return one_sqrtpi * exp(-x * x) * q2;
 }
-
 
 double cephes_normal(double x)
 {

@@ -3,7 +3,6 @@
 #include "global.h"
 #include "gmssl/sm2.h"
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct

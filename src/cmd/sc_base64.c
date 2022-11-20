@@ -40,22 +40,9 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
     XIO *instream  = NULL;
     XIO *outstream = NULL;
-    if (hex_args.infile)
-    {
-        instream = XIO_new_file(hex_args.infile, "rb");
-    }
-    else
-    {
-        instream = XIO_new_string(params->argv[0], false);
-    }
-    if (hex_args.outfile)
-    {
-        outstream = XIO_new_file(hex_args.outfile, "wb");
-    }
-    else
-    {
-        outstream = XIO_new_fp(stdout, false);
-    }
+    instream       = cmd_get_instream(CMDP_GET_ARG(params, 0), hex_args.infile, true);
+    outstream      = cmd_get_outstream(hex_args.outfile, true);
+
     if (hex_args.decode)
     {
         instream = XIO_newf_hex(instream);
@@ -65,7 +52,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         outstream = XIO_newf_hex(outstream);
     }
     XIO_drain(instream, outstream);
-    XIO_close(instream);
-    XIO_close(outstream);
+    XIO_CLOSE_SAFE(instream);
+    XIO_CLOSE_SAFE(outstream);
     return CMDP_ACT_OK;
 }

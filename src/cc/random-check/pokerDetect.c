@@ -36,7 +36,7 @@ int findIndex(PokerNi *tab, int tabSize, unsigned int flag)
 int PokerDetect(int M, int n, BitSequence *epsilon)
 {
     int ret = 0;
-    int i = 0, j = 0, N = n / M, index = 0, c = 0;
+    int i = 0, j = 0, N = n / M, index = 0;
     int maxElements = (int)pow(2, M);
     double p_value = 0.0, sum_ni = 0.0, mp = 0.0, V = 0.0;
     unsigned int flag = 0;

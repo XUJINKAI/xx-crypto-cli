@@ -54,7 +54,7 @@ static bool is_cipher_string(const char *str)
     {
         return false;
     }
-    for (int i = 0; i < strlen(str); i++)
+    for (uint32_t i = 0; i < strlen(str); i++)
     {
         if (!isxdigit(str[i]))
         {
@@ -155,13 +155,13 @@ static void chat_kdf(void *pass, size_t pass_len, uint8_t result_key[32], uint8_
 
 static RESULT sm2_point_from_string(SM2_POINT *P, const char *str)
 {
-    XX_MEM *mem = hex_to_mem(str, strlen(str));
+    xbytes *mem = hex_to_xbytes(str, strlen(str));
     if (mem == NULL)
     {
         return RET_FAIL;
     }
     int r = sm2_point_from_octets(P, mem->ptr, mem->len);
-    XX_MEM_free(mem);
+    xbytes_free(mem);
     return r == 1 ? RET_OK : RET_FAIL;
 }
 
@@ -178,8 +178,8 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
 
     struct chat_session_st session = {
-        .in_stream  = XIO_new_fp(stdin, false),
-        .out_stream = XIO_new_fp(stdout, false),
+        .in_stream  = XIO_new_fp(stdin, 0),
+        .out_stream = XIO_new_fp(stdout, 0),
     };
 
     if (arg_chat.init)

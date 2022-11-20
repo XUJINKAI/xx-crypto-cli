@@ -12,7 +12,7 @@ void __ogg_fdrfftf(int n, double *X, double *wsave, int *ifac);
 
 int DiscreteFourierTransform(int n, BitSequence *epsilon)
 {
-    double p_value, upperBound, percentile, N_l, N_o, d, *m, *X, *wsave;
+    double p_value, upperBound, N_l, N_o, d, *m, *X, *wsave;
     int i, count, ifac[15];
 
     if (((X = (double *)calloc(n, sizeof(double))) == NULL) ||
@@ -42,11 +42,11 @@ int DiscreteFourierTransform(int n, BitSequence *epsilon)
     for (i = 0; i < n / 2; i++)
         if (m[i] < upperBound)
             count++;
-    percentile = (double)count / (n / 2) * 100;
-    N_l        = (double)count; /* number of peaks less than h = sqrt(3*n) */
-    N_o        = (double)0.95 * n / 2.0;
-    d          = (N_l - N_o) / sqrt(n / 4.0 * 0.95 * 0.05);
-    p_value    = nist_erfc(fabs(d) / sqrt(2.0));
+    // double percentile = (double)count / (n / 2) * 100;
+    N_l     = (double)count; /* number of peaks less than h = sqrt(3*n) */
+    N_o     = (double)0.95 * n / 2.0;
+    d       = (N_l - N_o) / sqrt(n / 4.0 * 0.95 * 0.05);
+    p_value = nist_erfc(fabs(d) / sqrt(2.0));
 
     free(X);
     free(wsave);

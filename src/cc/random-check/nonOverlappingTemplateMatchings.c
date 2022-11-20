@@ -71,7 +71,7 @@ int NonOverlappingTemplateMatchings(int m, int n, BitSequence *epsilon)
 
             for (k = 0; k < m; k++)
             {
-                fscanf(fp, "%d", &bit);
+                fscanf(fp, "%u", &bit);
                 sequence[k] = bit;
                 //				fprintf(stats[TEST_NONPERIODIC], "%d", sequence[k]);
             }

@@ -23,7 +23,6 @@ cmdp_command_st sc_randcheck = {
     .fn_process = __process,
 };
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     CMDP_CHECK_EMPTY_HELP(params);
@@ -56,7 +55,6 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
     fclose(fp);
 
-    // memset(data, 0, len);
     ret = cc_random_check(data, len);
     printf("全部检测项: %s\n", ret == RET_OK ? "通过" : "失败");
 

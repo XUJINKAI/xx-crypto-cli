@@ -37,7 +37,6 @@ cmdp_command_st sc_rand = {
     .fn_process = __process,
 };
 
-
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
     CMDP_CHECK_EMPTY_HELP(params);

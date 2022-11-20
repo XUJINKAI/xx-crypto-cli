@@ -7,7 +7,8 @@ struct
     bool log_secret;
     bool log_verbose;
     bool log_debug;
-    bool uppercase;
+    bool upper_hex;
+    bool no_eol;
     bool no_color;
     bool version;
 } arg_main = {0};
@@ -23,6 +24,7 @@ extern cmdp_command_st sc_sm4;
 extern cmdp_command_st sc_data;
 extern cmdp_command_st sc_hex;
 extern cmdp_command_st sc_base64;
+extern cmdp_command_st sc_asn1;
 
 extern cmdp_command_st sc_chat;
 extern cmdp_command_st sc_gen;
@@ -36,12 +38,13 @@ cmdp_command_st main_cmdp = {
             &sc_rand,
             &sc_randcheck,
             &sc_hash,
-            // &sc_sm2,
+            &sc_sm2,
             &sc_sm4,
             CMDP_DOC("\nData process:\n"),
             &sc_data,
             &sc_hex,
             // &sc_base64,
+            &sc_asn1,
             CMDP_DOC("\nUtility:\n"),
             &sc_chat,
             &sc_gen,
@@ -51,12 +54,13 @@ cmdp_command_st main_cmdp = {
         },
     .options =
         (cmdp_option_st[]){
-            {0, "repl", "Into interactive mode", CMDP_TYPE_BOOL, &arg_main.repl_mode},
             {0, "log-secret", "Show secret log", CMDP_TYPE_BOOL, &arg_main.log_secret},
             {0, "log-verbose", "Show verbose log", CMDP_TYPE_BOOL, &arg_main.log_verbose},
             {0, "log-debug", "Show debug log", CMDP_TYPE_BOOL, &arg_main.log_debug},
-            {0, "uppercase", "Show uppercase hex", CMDP_TYPE_BOOL, &arg_main.uppercase},
+            {0, "no-eol", "No end of line", CMDP_TYPE_BOOL, &arg_main.no_eol},
             {0, "no-color", "Print no color", CMDP_TYPE_BOOL, &arg_main.no_color},
+            {0, "upper-hex", "Show uppercase hex", CMDP_TYPE_BOOL, &arg_main.upper_hex},
+            {0, "repl", "Into interactive mode", CMDP_TYPE_BOOL, &arg_main.repl_mode},
             {0, "version", "Show version", CMDP_TYPE_BOOL, &arg_main.version, CMDP_HIDE},
             {0},
         },
@@ -66,9 +70,12 @@ cmdp_command_st main_cmdp = {
     .fn_process = main_process,
 };
 
-
 static cmdp_action_t main_process(cmdp_process_param_st *params)
 {
+    if (arg_main.no_eol)
+    {
+        g_state.no_eol = true;
+    }
     if (arg_main.no_color)
     {
         g_state.no_color = true;
@@ -77,26 +84,26 @@ static cmdp_action_t main_process(cmdp_process_param_st *params)
     {
         g_state.repl_mode = true;
     }
-    if (arg_main.uppercase)
+    if (arg_main.upper_hex)
     {
-        g_state.uppercase = true;
+        g_state.upper_hex = true;
     }
     if (arg_main.log_debug)
     {
-        log_enable_type(_LOGT_DEBUG, true);
+        log_set_level(_LOGT_DEBUG, true);
         LOG_DBG("Debug log enabled");
         LOG_DBG("isatty(stdin) : %s", isatty(0) ? "true" : "false");
         LOG_DBG("isatty(stdout): %s", isatty(1) ? "true" : "false");
     }
     if (arg_main.log_verbose)
     {
-        log_enable_type(_LOGT_VERBOSE, true);
+        log_set_level(_LOGT_VERBOSE, true);
         LOG_VERBOSE("Verbose log enabled");
         LOG_VERBOSE("PID: %d", getpid());
     }
     if (arg_main.log_secret)
     {
-        log_enable_type(_LOGT_SECRET, true);
+        log_set_level(_LOGT_SECRET, true);
         LOG_DBG("Secret log enabled");
     }
 
@@ -108,7 +115,7 @@ static cmdp_action_t main_process(cmdp_process_param_st *params)
 #else
             "Release";
 #endif
-        fprintf(stdout, "xx version %s %s %s %s build\n", GIT_TAG, __DATE__, __TIME__, build_type);
+        XIO_printf(g_state.out, "xx version %s %s %s %s build\n", GIT_TAG, __DATE__, __TIME__, build_type);
         return CMDP_ACT_OK;
     }
 

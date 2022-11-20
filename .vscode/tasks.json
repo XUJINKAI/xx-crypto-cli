@@ -3,10 +3,23 @@
 	"tasks": [
 		{
 			"type": "cmake",
-			"label": "build_all",
+			"label": "build_xx",
 			"command": "build",
 			"targets": [
-				"all"
+				"xx"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+		},
+		{
+			"type": "cmake",
+			"label": "build_xxtest",
+			"command": "build",
+			"targets": [
+				"xxtest"
 			],
 			"group": {
 				"kind": "build",

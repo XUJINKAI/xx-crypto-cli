@@ -36,10 +36,21 @@ list(REMOVE_ITEM src ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 if(UNIX)
-  # add_compile_options(-pedantic)
-  # add_compile_options(-Wall -Wextra)
-  # add_compile_options(-Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-label)
-  # add_compile_options(-Wno-missing-field-initializers -Wno-newline-eof -Wno-sometimes-uninitialized)
+  add_compile_options(
+    -pedantic
+    -Wall
+    # -Wextra
+    -Wno-unused-parameter
+    -Wno-unused-label
+    -Wno-sign-compare
+    -Wno-pointer-sign
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
+    # -Wno-unused-function
+    # -Wno-missing-field-initializers
+    # -Wno-newline-eof
+    # -Wno-sometimes-uninitialized
+    )
 endif()
 
 add_library(xxlib ${src})
@@ -69,5 +80,7 @@ add_custom_target(test COMMAND xxtest)
 add_custom_target(test-valgrind
     COMMAND valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes
                     --trace-children=yes --error-exitcode=1
+                    # --verbose --log-file=valgrind.log
                     $<TARGET_FILE:xxtest>
 )
+add_custom_target(clang-format COMMAND clang-format -i ${src} ${test_src})

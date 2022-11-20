@@ -8,7 +8,7 @@
             "name": "xx",
             "type": "cppdbg",
             "request": "launch",
-            "preLaunchTask": "build_all",
+            "preLaunchTask": "build_xx",
             "program": "${workspaceFolder}/build/bin/xx",
             "cwd": "${workspaceFolder}/build",
             "args": [
@@ -16,6 +16,33 @@
                 "--log-verbose",
                 "--log-debug",
                 "--repl",
+            ],
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "xxtest",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "build_xxtest",
+            "program": "${workspaceFolder}/build/bin/xxtest",
+            "cwd": "${workspaceFolder}/build",
+            "args": [
+                "--filter=\"*.*\""
             ],
             "stopAtEntry": false,
             "environment": [],
