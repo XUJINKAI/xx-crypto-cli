@@ -19,6 +19,9 @@ Windows/Linux Crypto CLI Toolbox.
 - Generate SM2 key  
 `xx sm2 keygen [--sk <PrivateKeyHex>] [--pem]`
 
+- PBKDF2
+`xx pbkdf2 -p 123 -n 10`
+
 ## Build
 
 Run `git submodule update --init` to fetch the submodules.

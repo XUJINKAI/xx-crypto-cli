@@ -20,3 +20,13 @@ size_t xbytes_printf(xbytes *mem, const char *fmt, ...);
 size_t xbytes_vprintf(xbytes *mem, const char *fmt, va_list ap);
 void xbytes_free(xbytes *mem);
 uint8_t *xbytes_detach_and_free(xbytes *mem);
+
+#define xbytes_free_safe(mem)                                                                                          \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (mem)                                                                                                       \
+        {                                                                                                              \
+            xbytes_free(mem);                                                                                          \
+            mem = NULL;                                                                                                \
+        }                                                                                                              \
+    } while (0)

@@ -20,6 +20,7 @@ extern cmdp_command_st sc_randcheck;
 extern cmdp_command_st sc_hash;
 extern cmdp_command_st sc_sm2;
 extern cmdp_command_st sc_sm4;
+extern cmdp_command_st sc_pbkdf2;
 
 extern cmdp_command_st sc_data;
 extern cmdp_command_st sc_hex;
@@ -36,10 +37,11 @@ cmdp_command_st main_cmdp = {
         (cmdp_command_st *[]){
             CMDP_DOC("\nStandard crypto:\n"),
             &sc_rand,
-            &sc_randcheck,
             &sc_hash,
             &sc_sm2,
             &sc_sm4,
+            &sc_pbkdf2,
+            &sc_randcheck,
             CMDP_DOC("\nData process:\n"),
             &sc_data,
             &sc_hex,
@@ -66,7 +68,8 @@ cmdp_command_st main_cmdp = {
         },
     .doc_tail = "\n"
                 "Use -h/--help to show this help, --version to show version.\n"
-                "Homepage: https://github.com/XUJINKAI/crypto-tool\n",
+                "Homepage: https://github.com/XUJINKAI/xx-crypto-cli"
+                "\n",
     .fn_process = main_process,
 };
 

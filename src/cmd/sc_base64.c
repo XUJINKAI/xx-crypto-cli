@@ -52,7 +52,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         outstream = XIO_newf_hex(outstream);
     }
     XIO_drain(instream, outstream);
-    XIO_CLOSE_SAFE(instream);
-    XIO_CLOSE_SAFE(outstream);
+    xio_close_safe(instream);
+    xio_close_safe(outstream);
     return CMDP_ACT_OK;
 }

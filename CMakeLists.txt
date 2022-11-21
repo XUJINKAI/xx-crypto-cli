@@ -45,7 +45,7 @@ if(UNIX)
     -Wno-sign-compare
     -Wno-pointer-sign
     -Wno-unused-variable
-    -Wno-unused-but-set-variable
+    # -Wno-unused-but-set-variable
     # -Wno-unused-function
     # -Wno-missing-field-initializers
     # -Wno-newline-eof

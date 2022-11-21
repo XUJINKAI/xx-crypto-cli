@@ -40,6 +40,15 @@ extern APP_STATE g_state;
 
 #include "gmssl/mem.h"
 #define clear_buffer gmssl_secure_clear
+#define free_safe(p)                                                                                                   \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (p)                                                                                                         \
+        {                                                                                                              \
+            free(p);                                                                                                   \
+            p = NULL;                                                                                                  \
+        }                                                                                                              \
+    } while (0)
 
 #include "utils/string.h"
 #include "utils/unistd.h"

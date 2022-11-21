@@ -61,13 +61,13 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
 
     if (rand_args.noout)
     {
-        XIO_CLOSE_SAFE(outstream);
+        xio_close_safe(outstream);
         outstream = XIO_new_null();
     }
 
     ret = cc_random_bytes(rand_args.engine, outstream, len);
 
 end:
-    XIO_CLOSE_SAFE(outstream);
+    xio_close_safe(outstream);
     return RESULT_TO_CMDP_ACTION(ret);
 }

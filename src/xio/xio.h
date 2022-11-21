@@ -99,7 +99,7 @@ void *XIO_MBUILDER_get_buffer(XIO *io);
 size_t XIO_MBUILDER_get_size(XIO *io);
 size_t XIO_MBUILDER_fprint(XIO *io, FILE *fp);
 
-#define XIO_CLOSE_SAFE(xio)                                                                                            \
+#define xio_close_safe(xio)                                                                                            \
     do                                                                                                                 \
     {                                                                                                                  \
         if (xio)                                                                                                       \

@@ -62,16 +62,18 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
 
     if (args.unzip)
     {
-        cc_sm2_key_print_uncompressed(outstream, &key);
+        cc_sm2_private_key_print_raw(outstream, &key);
+        cc_sm2_public_key_print_raw(outstream, &key);
     }
     if (args.zip)
     {
-        cc_sm2_key_print_compresed(outstream, &key);
+        cc_sm2_private_key_print_raw(outstream, &key);
+        cc_sm2_public_key_print_compressed_raw(outstream, &key);
     }
     if (args.pem)
     {
-        cc_sm2_public_key_print_pem(outstream, &key);
         cc_sm2_private_key_print_pem(outstream, &key);
+        cc_sm2_public_key_print_pem(outstream, &key);
     }
 
 end:
