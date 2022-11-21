@@ -44,6 +44,6 @@ extern APP_STATE g_state;
 #include "utils/string.h"
 #include "utils/unistd.h"
 
-#include "utils/log.h"
+#include "log.h"
 
 #endif /* __GLOBAL_H__ */

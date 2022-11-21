@@ -195,6 +195,22 @@ XIO *XIO_get_source(XIO *io)
     }
     return XIO_get_source(io->target);
 }
+size_t XIO_get_num_read(XIO *io, bool source)
+{
+    if (source)
+    {
+        io = XIO_get_source(io);
+    }
+    return io->num_read;
+}
+size_t XIO_get_num_write(XIO *io, bool source)
+{
+    if (source)
+    {
+        io = XIO_get_source(io);
+    }
+    return io->num_write;
+}
 char XIO_get_last_char(XIO *io, bool source)
 {
     if (source)

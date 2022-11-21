@@ -25,7 +25,7 @@ static void repl()
     }
 }
 
-int xx_run(int argc, char *argv[], XIO *instream, XIO *outstream, XIO *errstream)
+int xx_run(int argc, char *argv[], XIO *instream, XIO *outstream, FILE *errstream)
 {
     g_state.in  = instream;
     g_state.out = outstream;

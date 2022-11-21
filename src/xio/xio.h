@@ -78,6 +78,8 @@ XIO *XIO_dup(XIO *io);
 void XIO_drain(XIO *in, XIO *out);
 bool XIO_isatty(XIO *io);
 XIO *XIO_get_source(XIO *io);
+size_t XIO_get_num_read(XIO *io, bool source);
+size_t XIO_get_num_write(XIO *io, bool source);
 char XIO_get_last_char(XIO *io, bool source);
 void XIO_set_event_callback(XIO *io, XIO_EVENT_CALLBACK callback, void *arg);
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "utils/console.h"
 #include "utils/terminal.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <xio/xio.h>
 
@@ -21,7 +21,8 @@ typedef enum
 #define _LOGF_NONE 0
 #define _LOGF_PROG 0x01
 
-void log_set_stream(XIO *stream);
+void log_set_stream(FILE *stream);
+FILE *log_get_stream(void);
 void log_set_level(_LOG_TYPE type, bool enable);
 bool log_is_level_enabled(_LOG_TYPE type);
 
