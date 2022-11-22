@@ -85,6 +85,25 @@ size_t XIO_write_pem(XIO *io, const char *name, const uint8_t *__ptr, size_t __l
     r += XIO_printf(io, "-----BEGIN %s-----\n", name);
     r += XIO_printf(io, "%s", b64);
     r += XIO_printf(io, "-----END %s-----\n", name);
+    free(b64);
+    return r;
+}
+size_t XIO_write_base64(XIO *io, const uint8_t *__ptr, size_t __len)
+{
+    if (!__len)
+    {
+        return 0;
+    }
+
+    char *b64 = bytes_to_base64(__ptr, __len);
+    if (!b64)
+    {
+        return 0;
+    }
+
+    size_t r = 0;
+    r += XIO_printf(io, "%s", b64);
+    free(b64);
     return r;
 }
 size_t XIO_printf(XIO *io, const char *format, ...)

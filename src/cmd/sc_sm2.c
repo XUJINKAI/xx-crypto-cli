@@ -17,7 +17,7 @@ cmdp_command_st sc_sm2 = {
     .sub_commands =
         (cmdp_command_st *[]){
             &sc_sm2_keygen,
-            // &sc_sm2_sign,
+            &sc_sm2_sign,
             // &sc_sm2_verify,
             // &sc_sm2_enc,
             // &sc_sm2_dec,

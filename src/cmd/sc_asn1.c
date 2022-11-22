@@ -28,5 +28,8 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     instream       = cmd_get_instream(NULL, args.infile, true);
     outstream      = cmd_get_outstream(NULL, true);
 
+end:
+    xio_close_safe(instream);
+    xio_close_safe(outstream);
     return CMDP_ACT_OK;
 }

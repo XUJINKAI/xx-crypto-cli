@@ -69,6 +69,7 @@ size_t XIO_read(XIO *io, uint8_t *__ptr, size_t __maxlen);
 size_t XIO_write(XIO *io, const uint8_t *__ptr, size_t __len);
 size_t XIO_write_hex(XIO *io, const uint8_t *__ptr, size_t __len);
 size_t XIO_write_pem(XIO *io, const char *name, const uint8_t *__ptr, size_t __len);
+size_t XIO_write_base64(XIO *io, const uint8_t *__ptr, size_t __len);
 size_t XIO_printf(XIO *io, const char *format, ...) __printflike(2, 3);
 size_t XIO_vprintf(XIO *io, const char *format, va_list args);
 void XIO_put_color(XIO *io, const char *color);

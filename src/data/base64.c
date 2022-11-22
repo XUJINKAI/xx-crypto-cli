@@ -4,7 +4,7 @@
 char *bytes_to_base64(const uint8_t *__ptr, size_t __len)
 {
     uint8_t *b64 = NULL;
-    if (!(b64 = malloc(__len * 2)))
+    if (!(b64 = calloc(1, __len * 2)))
     {
         return NULL;
     }
