@@ -32,6 +32,7 @@ int xx_run(int argc, char *argv[], XIO *instream, XIO *outstream, FILE *errstrea
     log_set_stream(errstream);
 
 #ifdef _DEBUG
+    // g_state.repl_mode = true;
     // log_set_level(_LOGT_DEBUG, true);
 #endif
 

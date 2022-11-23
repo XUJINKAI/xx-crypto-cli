@@ -42,7 +42,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     if (args.sk)
     {
         uint8_t sk[32];
-        if (RET_OK != hex_str_expect_to_bytes(args.sk, 32, sk))
+        if (RET_OK != hex_to_bytes_expect_len(args.sk, 32, sk))
         {
             LOG_ERROR("Invalid sk (private key).");
             goto end;

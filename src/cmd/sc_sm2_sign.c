@@ -14,6 +14,7 @@ static struct
     char *instring;
     char *infile;
     char *bufsize;
+    bool out_hex;
 } args;
 
 cmdp_command_st sc_sm2_sign = {
@@ -24,10 +25,11 @@ cmdp_command_st sc_sm2_sign = {
         (cmdp_option_st[]){
             {0, "key", "Raw private key HEX or PEM file", CMDP_TYPE_STRING_PTR, &args.key, "<KEY>"},
             {0, "pass", "Password for the private key", CMDP_TYPE_STRING_PTR, &args.pass, "<PASS>"},
-            {0, "id", "User ID", CMDP_TYPE_STRING_PTR, &args.id, "<ID>"},
+            {0, "id", "Signature id", CMDP_TYPE_STRING_PTR, &args.id, "<ID>"},
             _opt_intext(args.instring, ),
             _opt_infile(args.infile, ),
             {0, "bufsize", "Update buffer size", CMDP_TYPE_STRING_PTR, &args.bufsize, "<size>"},
+            {0, "hex", "Output signature in HEX", CMDP_TYPE_BOOL, &args.out_hex},
             {0},
         },
     .fn_process = __process,
@@ -63,7 +65,15 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     }
 
     ret = cc_sm2_sign(instream, &key, id, strlen(id), bufsize, sig, &siglen);
-    XIO_write_base64(outstream, sig, siglen);
+
+    if (args.out_hex)
+    {
+        XIO_write_hex(outstream, sig, siglen);
+    }
+    else
+    {
+        XIO_write_base64(outstream, sig, siglen);
+    }
 
 end:
     xio_close_safe(instream);

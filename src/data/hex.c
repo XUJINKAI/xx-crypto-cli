@@ -32,8 +32,12 @@ xbytes *hex_to_xbytes(const char *hex, size_t len)
     return mem;
 }
 
-RESULT hex_str_expect_to_bytes(const char *hex, size_t expectlen, uint8_t *bytes)
+RESULT hex_to_bytes_expect_len(const char *hex, size_t expectlen, uint8_t *bytes)
 {
+    if (hex == NULL)
+    {
+        return RET_FAIL;
+    }
     xbytes *mem = hex_to_xbytes(hex, strlen(hex));
     if (mem == NULL)
     {
@@ -45,6 +49,28 @@ RESULT hex_str_expect_to_bytes(const char *hex, size_t expectlen, uint8_t *bytes
         return RET_FAIL;
     }
     memcpy(bytes, mem->ptr, mem->len);
+    xbytes_free(mem);
+    return RET_OK;
+}
+
+RESULT hex_to_bytes_max_len(const char *hex, size_t maxlen, uint8_t *bytes, size_t *len)
+{
+    if (hex == NULL)
+    {
+        return RET_FAIL;
+    }
+    xbytes *mem = hex_to_xbytes(hex, strlen(hex));
+    if (mem == NULL)
+    {
+        return RET_FAIL;
+    }
+    if (mem->len > maxlen)
+    {
+        xbytes_free(mem);
+        return RET_FAIL;
+    }
+    memcpy(bytes, mem->ptr, mem->len);
+    *len = mem->len;
     xbytes_free(mem);
     return RET_OK;
 }
