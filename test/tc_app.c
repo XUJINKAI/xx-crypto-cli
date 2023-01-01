@@ -16,6 +16,14 @@ UTEST(app, help)
     CMD_END();
 }
 
+UTEST(app, pwd)
+{
+    CMD_START();
+    CMD_RUN("xx", "pwd");
+    EXPECT_EQ(0, cmd_result);
+    CMD_END();
+}
+
 UTEST(app, unknown_command)
 {
     CMD_START();

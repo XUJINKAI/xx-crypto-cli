@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "data/xarray.h"
 #include "data/xbytes.h"
 #include "xio/xio.h"
 

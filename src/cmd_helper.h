@@ -30,26 +30,13 @@ XIO *cmd_get_outstream(char *filename, bool g_out);
 #define CMDP_GET_ARG(params, index)   (params->argc > index ? params->argv[index] : NULL)
 #define RESULT_TO_CMDP_ACTION(result) (result == RET_OK ? CMDP_ACT_OK : CMDP_ACT_ERROR)
 
-#define _opt_intext(opt, more)                                                                                         \
-    {                                                                                                                  \
-        's', "string", "Input String", CMDP_TYPE_STRING_PTR, &opt, "<STRING>", more                                    \
-    }
-#define _opt_infile(opt, more)                                                                                         \
-    {                                                                                                                  \
-        0, "in", "Input File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                              \
-    }
-#define _opt_outfile(opt, more)                                                                                        \
-    {                                                                                                                  \
-        0, "out", "Output File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more                                            \
-    }
-#define _opt_informat(opt, more)                                                                                       \
-    {                                                                                                                  \
-        0, "inform", "Input Format", CMDP_TYPE_STRING_PTR, &opt, "<FORMAT>", more                                      \
-    }
-#define _opt_outformat(opt, more)                                                                                      \
-    {                                                                                                                  \
-        0, "outform", "Output Format", CMDP_TYPE_STRING_PTR, &opt, "<FORMAT>", more                                    \
-    }
+// clang-format off
+#define _opt_intext(opt, more) {'s', "string", "Input String", CMDP_TYPE_STRING_PTR, &opt, "<STRING>", more}
+#define _opt_infile(opt, more) {0, "in", "Input File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more}
+#define _opt_outfile(opt, more) {0, "out", "Output File", CMDP_TYPE_STRING_PTR, &opt, "<FILE>", more}
+#define _opt_informat(opt, more) {0, "inform", "Input Format", CMDP_TYPE_STRING_PTR, &opt, "<FORMAT>", more}
+#define _opt_outformat(opt, more) {0, "outform", "Output Format", CMDP_TYPE_STRING_PTR, &opt, "<FORMAT>", more}
+// clang-format on
 
 #define CMDP_CHECK_EMPTY_HELP(params)                                                                                  \
     if (params->argc == 0 && params->opts == 0)                                                                        \

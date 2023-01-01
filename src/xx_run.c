@@ -11,6 +11,7 @@ static void repl()
 {
     int argc;
     char **argv;
+    XIO_putc(g_state.out, '\n');
     while (1)
     {
         char *line = console_readline(TC_GREEN, "xx> ");
@@ -21,6 +22,7 @@ static void repl()
         }
         commandline_to_args(line, &argc, &argv);
         run_command(argc, argv);
+        XIO_putc(g_state.out, '\n');
         free(line);
     }
 }

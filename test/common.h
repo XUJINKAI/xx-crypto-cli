@@ -4,6 +4,8 @@
 #include "utest.h"
 #include <stdio.h>
 
+#define EXAMPLES_DIR "../test/examples/"
+
 int xx_run(int argc, char *argv[], XIO *in_stream, XIO *out_stream, FILE *log_stream);
 
 #define DIM(STRING)    "\x1b[2m" STRING "\x1b[0m"

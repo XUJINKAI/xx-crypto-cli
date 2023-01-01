@@ -9,6 +9,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 add_definitions(-DENABLE_BROKEN_CRYPTO)
 option(ENABLE_BROKEN_CRYPTO "Enable broken crypto" ON)
 option(ENABLE_RDRND "Enable Intel RDRND instructions" ON)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 add_subdirectory(GmSSL EXCLUDE_FROM_ALL)
 
 execute_process(

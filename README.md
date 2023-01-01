@@ -50,9 +50,9 @@ cmake --build . --config release
 
 [cmdparser](https://github.com/XUJINKAI/cmdparser)
 
-[GmSSL](https://github.com/guanzhi/GmSSL)
+[GmSSL](https://github.com/guanzhi/GmSSL), [nist_sts](https://github.com/ZZMarquis/nist_sts)
 
-[nist_sts](https://github.com/ZZMarquis/nist_sts)
+[asn1js](https://github.com/lapo-luchini/asn1js)
 
 ## License
 

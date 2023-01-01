@@ -1,6 +1,6 @@
+#include "cc/format/hex.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
-#include "data/hex.h"
 #include "global.h"
 #include "gmssl/pbkdf2.h"
 #include "utils/converter.h"
@@ -64,11 +64,11 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         goto end;
     }
 
-    salt      = args.salt ? hex_to_xbytes(args.salt, strlen(args.salt)) : xbytes_new(0);
+    salt      = args.salt ? cc_hex_decode(args.salt, strlen(args.salt), 0) : xbytes_new(0);
     outbuf    = (uint8_t *)malloc(outlen);
     outstream = cmd_get_outstream(NULL, true);
 
-    if (1 != pbkdf2_genkey(digest, pass, passlen, salt->ptr, salt->len, iter, outlen, outbuf))
+    if (1 != pbkdf2_genkey(digest, pass, passlen, xbytes_buffer(salt), xbytes_length(salt), iter, outlen, outbuf))
     {
         LOG_ERROR("pbkdf2_genkey failed");
         goto end;

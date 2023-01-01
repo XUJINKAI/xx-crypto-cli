@@ -1,4 +1,4 @@
-#include "data/base64.h"
+#include "cc/format/base64.h"
 #include "xio_internal.h"
 #include <global.h>
 #include <stdarg.h>
@@ -29,6 +29,50 @@ long _XIO_ctrl(XIO *io, _XIO_CTRL_ENUM ctrl, long larg, void *parg)
         }
     }
     return 0;
+}
+int XIO_getc(XIO *io)
+{
+    uint8_t c;
+    if (XIO_read(io, &c, 1) == 1)
+    {
+        return c;
+    }
+    return EOF;
+}
+int XIO_putc(XIO *io, int c)
+{
+    uint8_t b = c;
+    if (XIO_write(io, &b, 1) == 1)
+    {
+        return c;
+    }
+    return EOF;
+}
+xbytes *XIO_read_all_buf(uint8_t *buf, size_t bufsize, XIO *io)
+{
+    xbytes *b = xbytes_new(bufsize);
+    size_t r;
+    while ((r = XIO_read(io, buf, bufsize)) > 0)
+    {
+        xbytes_write(b, buf, r);
+    }
+    return b;
+}
+xbytes *XIO_read_all(XIO *io, size_t bufsize)
+{
+    if (bufsize > STACK_BUFFER_SIZE)
+    {
+        uint8_t *buf = malloc(bufsize);
+        xbytes *b    = XIO_read_all_buf(buf, bufsize, io);
+        free(buf);
+        return b;
+    }
+    else
+    {
+        bufsize = bufsize == 0 ? STACK_BUFFER_SIZE : bufsize;
+        uint8_t buf[STACK_BUFFER_SIZE];
+        return XIO_read_all_buf(buf, bufsize, io);
+    }
 }
 size_t XIO_read(XIO *io, uint8_t *__ptr, size_t __maxlen)
 {
@@ -75,7 +119,7 @@ size_t XIO_write_pem(XIO *io, const char *name, const uint8_t *__ptr, size_t __l
         return 0;
     }
 
-    char *b64 = bytes_to_base64(__ptr, __len);
+    char *b64 = cc_base64_encode(__ptr, __len, 0);
     if (!b64)
     {
         return 0;
@@ -95,7 +139,7 @@ size_t XIO_write_base64(XIO *io, const uint8_t *__ptr, size_t __len)
         return 0;
     }
 
-    char *b64 = bytes_to_base64(__ptr, __len);
+    char *b64 = cc_base64_encode(__ptr, __len, 0);
     if (!b64)
     {
         return 0;

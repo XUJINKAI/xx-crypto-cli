@@ -1,5 +1,6 @@
 #include "rand.h"
 #include "gmssl/rand.h"
+#include "gmssl/rdrand.h"
 #include "gmssl/sdf.h"
 #include "utils/string.h"
 

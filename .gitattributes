@@ -1,2 +1,4 @@
 * text eol=auto
+*.pem eol=lf
+*.bin binary
 *.h linguist-language=c

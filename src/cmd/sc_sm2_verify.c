@@ -1,7 +1,7 @@
+#include "cc/format/hex.h"
 #include "cc/sm2.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
-#include "data/hex.h"
 #include "global.h"
 #include "utils/converter.h"
 
@@ -61,7 +61,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
         LOG_ERROR("Failed to load private key");
         goto end;
     }
-    if (RET_OK != hex_to_bytes_max_len(args.sig, sizeof(sig), sig, &siglen))
+    if (RET_OK != cc_hex_dec_max_len(args.sig, sizeof(sig), sig, &siglen))
     {
         LOG_ERROR("Failed to load signature");
         goto end;

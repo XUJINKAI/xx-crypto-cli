@@ -30,6 +30,8 @@ extern cmdp_command_st sc_asn1;
 extern cmdp_command_st sc_chat;
 extern cmdp_command_st sc_gen;
 
+extern cmdp_command_st sc_pwd;
+
 cmdp_command_st main_cmdp = {
     .doc = "Usage: xx [OPTIONS] COMMAND [ARGS]\n"
            "xx is a command line tool for crypto data process.\n",
@@ -45,11 +47,13 @@ cmdp_command_st main_cmdp = {
             CMDP_DOC("\nData process:\n"),
             &sc_data,
             &sc_hex,
-            // &sc_base64,
+            &sc_base64,
             &sc_asn1,
             CMDP_DOC("\nUtility:\n"),
             &sc_chat,
             &sc_gen,
+            // hide sh command
+            &sc_pwd,
             CMDP_DOC("\n"
                      "Options:\n"),
             NULL,

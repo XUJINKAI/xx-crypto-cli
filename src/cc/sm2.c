@@ -1,5 +1,5 @@
 #include "sm2.h"
-#include "data/hex.h"
+#include "cc/format/hex.h"
 
 size_t cc_sm2_private_key_print_raw(XIO *io, const SM2_KEY *key)
 {
@@ -181,7 +181,7 @@ RESULT cc_sm2_try_load_private_key(SM2_KEY *sm2key, const char *key, size_t keyl
     RESULT ret = RET_FAIL;
     uint8_t privateKey[32];
 
-    if (RET_OK == hex_to_bytes_expect_len(key, 32, privateKey))
+    if (RET_OK == cc_hex_dec_expect_len(key, 32, privateKey))
     {
         if (sm2_key_set_private_key(sm2key, privateKey) != 1)
         {
@@ -198,7 +198,7 @@ RESULT cc_sm2_try_load_public_key(SM2_KEY *sm2key, const char *key, size_t keyle
     RESULT ret = RET_FAIL;
     uint8_t privateKey[32];
 
-    if (RET_OK == hex_to_bytes_expect_len(key, 32, privateKey))
+    if (RET_OK == cc_hex_dec_expect_len(key, 32, privateKey))
     {
         if (sm2_key_set_private_key(sm2key, privateKey) != 1)
         {

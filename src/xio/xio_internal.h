@@ -6,6 +6,7 @@
 
 typedef struct XIO_st XIO;
 
+// prevent multi-time flush
 #define XIO_ICF_SHOULD_FLUSH 0x01
 
 struct XIO_st
@@ -20,7 +21,7 @@ struct XIO_st
     int type;
     int ic_flag; // internal control flag
 
-    int flags;   // extra flags
+    int flags;   // common flags, e.g. XIO_FLAG_CLOSE
     XIO *target; // for filter
     XIO_EVENT_CALLBACK event_callback;
     void *event_callback_arg;

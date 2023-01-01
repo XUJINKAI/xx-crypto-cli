@@ -1,26 +1,28 @@
+#include "cc/format/base64.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
 #include "global.h"
-#include "gmssl/hex.h"
 
 static cmdp_action_t __process(cmdp_process_param_st *params);
 
 static struct
 {
     bool decode;
+    char *instring;
     char *infile;
     char *outfile;
-} hex_args;
+} __args;
 
 cmdp_command_st sc_base64 = {
     .name = "base64",
     .desc = "base64 encode/decode",
-    .doc  = "base64 [-d] STRING\n",
+    .doc  = "base64 [-d] -s STRING\n",
     .options =
         (cmdp_option_st[]){
-            {'d', "decode", "decode", CMDP_TYPE_BOOL, &hex_args.decode},
-            {'r', "read", "input file", CMDP_TYPE_STRING_PTR, &hex_args.infile, "<file>"},
-            {'w', "write", "output file", CMDP_TYPE_STRING_PTR, &hex_args.outfile, "<file>"},
+            {'d', "decode", "decode", CMDP_TYPE_BOOL, &__args.decode},
+            _opt_intext(__args.instring, ),
+            _opt_infile(__args.infile, ),
+            _opt_outfile(__args.outfile, ),
             {0},
         },
     .fn_process = __process,
@@ -29,29 +31,39 @@ cmdp_command_st sc_base64 = {
 
 static cmdp_action_t __process(cmdp_process_param_st *params)
 {
-    if (params->argc == 0 && params->opts == 0)
-    {
-        return CMDP_ACT_SHOW_HELP;
-    }
-    if (params->argc > 1)
-    {
-        LOG_ERROR("too many arguments");
-        return CMDP_ACT_ERROR;
-    }
+    CMDP_CHECK_ARG_COUNT(params, 0, 0);
+
     XIO *instream  = NULL;
     XIO *outstream = NULL;
-    instream       = cmd_get_instream(CMDP_GET_ARG(params, 0), hex_args.infile, true);
-    outstream      = cmd_get_outstream(hex_args.outfile, true);
 
-    if (hex_args.decode)
+    instream  = cmd_get_instream(__args.instring, __args.infile, true);
+    outstream = cmd_get_outstream(__args.outfile, true);
+    LOG_DBG_XIO("in : ", instream);
+    LOG_DBG_XIO("out: ", outstream);
+
+    if (__args.decode)
     {
-        instream = XIO_newf_hex(instream);
     }
-    else
+    else // encode
     {
-        outstream = XIO_newf_hex(outstream);
+        xbytes *all = XIO_read_all(instream, 0);
+        if (!all)
+        {
+            LOG_ERROR("read instream failed");
+            goto end;
+        }
+        char *encoded = cc_base64_encode(xbytes_buffer(all), xbytes_length(all), 0);
+        if (!encoded)
+        {
+            xbytes_free(all);
+            LOG_ERROR("decode failed");
+            goto end;
+        }
+        XIO_write(outstream, encoded, strlen(encoded));
+        free(encoded);
     }
-    XIO_drain(instream, outstream);
+
+end:
     xio_close_safe(instream);
     xio_close_safe(outstream);
     return CMDP_ACT_OK;

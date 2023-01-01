@@ -1,5 +1,6 @@
 #pragma once
 
+#include "data/xbytes.h"
 #include "utils/unistd.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -65,6 +66,9 @@ typedef void (*XIO_EVENT_CALLBACK)(XIO *io, _XIO_EVENT_ENUM event, void *arg, co
 #define XIO_seek(io, offset, whence) (_XIO_ctrl(io, _XIO_CTRL_SEEK_SET + (whence), (offset), 0))
 #define XIO_tell(io)                 (_XIO_ctrl(io, _XIO_CTRL_TELL, 0, 0))
 
+int XIO_getc(XIO *io);
+int XIO_putc(XIO *io, int c);
+xbytes *XIO_read_all(XIO *io, size_t bufsize);
 size_t XIO_read(XIO *io, uint8_t *__ptr, size_t __maxlen);
 size_t XIO_write(XIO *io, const uint8_t *__ptr, size_t __len);
 size_t XIO_write_hex(XIO *io, const uint8_t *__ptr, size_t __len);

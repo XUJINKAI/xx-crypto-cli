@@ -1,6 +1,6 @@
+#include "cc/format/hex.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
-#include "data/hex.h"
 #include "global.h"
 #include "gmssl/hex.h"
 #include "gmssl/pbkdf2.h"
@@ -69,8 +69,8 @@ static void chat_session_start(struct chat_session_st *session)
     XIO_printf(session->out_stream, "\n"
                                     "Chat session started.\n");
 
-    char *key_hex = bytes_to_hex(session->key, 16);
-    char *iv_hex  = bytes_to_hex(session->iv, 16);
+    char *key_hex = cc_hex_encode(session->key, 16, 0);
+    char *iv_hex  = cc_hex_encode(session->iv, 16, 0);
     LOG_SECRET("Use following command to restore session:\n"
                "chat --restore %s%s\n",
                key_hex, iv_hex);
@@ -109,12 +109,12 @@ static void chat_session_start(struct chat_session_st *session)
             {
                 readin = lineSize - i > 1024 ? 1024 : lineSize - i;
                 sm4_cbc_encrypt_update(&enc_ctx, (uint8_t *)line + i, readin, cipher_block, &cipher_block_len);
-                char *cipher_hex = bytes_to_hex(cipher_block, cipher_block_len);
+                char *cipher_hex = cc_hex_encode(cipher_block, cipher_block_len, 0);
                 XIO_printf(session->out_stream, "%s", cipher_hex);
                 free(cipher_hex);
             }
             sm4_cbc_encrypt_finish(&enc_ctx, cipher_block, &cipher_block_len);
-            char *final_hex = bytes_to_hex(cipher_block, cipher_block_len);
+            char *final_hex = cc_hex_encode(cipher_block, cipher_block_len, 0);
             XIO_printf(session->out_stream, "%s\n", final_hex);
             free(final_hex);
         }
@@ -155,12 +155,12 @@ static void chat_kdf(void *pass, size_t pass_len, uint8_t result_key[32], uint8_
 
 static RESULT sm2_point_from_string(SM2_POINT *P, const char *str)
 {
-    xbytes *mem = hex_to_xbytes(str, strlen(str));
+    xbytes *mem = cc_hex_decode(str, strlen(str), 0);
     if (mem == NULL)
     {
         return RET_FAIL;
     }
-    int r = sm2_point_from_octets(P, mem->ptr, mem->len);
+    int r = sm2_point_from_octets(P, xbytes_buffer(mem), xbytes_length(mem));
     xbytes_free(mem);
     return r == 1 ? RET_OK : RET_FAIL;
 }

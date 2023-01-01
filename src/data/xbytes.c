@@ -3,6 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct xbytes
+{
+    uint8_t *ptr;
+    size_t len;
+    size_t capacity;
+};
+
 xbytes *xbytes_new(size_t capacity)
 {
     xbytes *mem = calloc(1, sizeof(xbytes));
@@ -20,7 +27,7 @@ xbytes *xbytes_new(size_t capacity)
     }
     return mem;
 }
-xbytes *xbytes_new_from(void *ptr, size_t len)
+xbytes *xbytes_new_copy(void *ptr, size_t len)
 {
     xbytes *mem = xbytes_new(len);
     if (!mem)
@@ -29,6 +36,14 @@ xbytes *xbytes_new_from(void *ptr, size_t len)
     }
     xbytes_write(mem, ptr, len);
     return mem;
+}
+void *xbytes_buffer(xbytes *mem)
+{
+    return mem ? mem->ptr : NULL;
+}
+size_t xbytes_length(xbytes *mem)
+{
+    return mem ? mem->len : 0;
 }
 size_t xbytes_require_size(xbytes *mem, size_t required_remain_size)
 {
@@ -45,6 +60,11 @@ size_t xbytes_require_size(xbytes *mem, size_t required_remain_size)
         mem->capacity = new_capacity;
     }
     return mem->capacity - mem->len;
+}
+void xbytes_clean(xbytes *mem)
+{
+    memset(mem->ptr, 0, mem->capacity);
+    mem->len = 0;
 }
 size_t xbytes_write(xbytes *mem, void *ptr, size_t len)
 {

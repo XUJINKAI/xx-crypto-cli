@@ -9,25 +9,8 @@ typedef struct
 
 static size_t f_read(XIO *__io, uint8_t *__ptr, size_t __maxlen)
 {
-    XIO_HEX *io      = (XIO_HEX *)__io;
-    uint8_t *hex_buf = (uint8_t *)calloc(1, __maxlen * 2);
-    size_t hex_len   = XIO_read(io->base.target, hex_buf, __maxlen * 2);
-    if (hex_len % 2)
-    {
-        free(hex_buf);
-        LOG_ERROR("hex decode error");
-        return 0;
-    }
-    size_t bytes_len;
-    if (hex_to_bytes((char *)hex_buf, hex_len, __ptr, &bytes_len) < 0)
-    {
-        free(hex_buf);
-        LOG_ERROR("hex decode error");
-        return 0;
-    }
-    free(hex_buf);
-    io->base.num_read += bytes_len;
-    return bytes_len;
+    LOG_ERROR("XIO_HEX does not support read");
+    return 0;
 }
 static size_t f_write(XIO *__io, const uint8_t *__ptr, size_t __len)
 {
