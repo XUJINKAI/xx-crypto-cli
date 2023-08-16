@@ -1,6 +1,6 @@
 #include "cc/asn1.h"
-#include "cc/format/decoder.h"
 #include "cc/format/hex.h"
+#include "cc/format/pem.h"
 #include "cmd_helper.h"
 #include "cmdparser.h"
 #include "data/xbytes.h"
@@ -47,6 +47,7 @@ static cmdp_action_t __process(cmdp_process_param_st *params)
     size_t l   = xbytes_length(allread);
 
     bool is_string = is_utf8_string(p, l);
+    LOG_DBG("is_string: %d", is_string);
     if (is_string)
     {
         xarray_of(CC_PEM_DATA) *pems = cc_pem_find_all((const char *)p);
